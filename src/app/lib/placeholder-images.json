@@ -1,0 +1,11 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-productivity",
+      "description": "A modern workspace with a calendar and laptop",
+      "imageUrl": "https://picsum.photos/seed/productivity/1200/600",
+      "imageHint": "productivity workspace"
+    }
+  ]
+}
