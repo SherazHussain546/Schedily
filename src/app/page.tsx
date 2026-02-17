@@ -24,7 +24,10 @@ import {
   Zap,
   Clock,
   CalendarDays,
-  MailWarning
+  MailWarning,
+  CheckCircle2,
+  Globe,
+  BellRing
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -45,6 +48,7 @@ import { useRouter } from "next/navigation";
 import { generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { triggerNotification } from "@/app/actions/notifications";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function SchedilyDashboard(props: {
   params: Promise<any>;
@@ -188,7 +192,6 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      // Trigger AI Notification and save to Ledger
       triggerNotification({
         recipientId: targetUid,
         recipientEmail: targetUserData.email,
@@ -220,7 +223,6 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      // Notify group members
       const membersRef = collection(db, "groups", groupId, "members");
       const membersSnap = await getDocs(membersRef);
       membersSnap.docs.forEach(memberDoc => {
@@ -253,117 +255,253 @@ export default function SchedilyDashboard(props: {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-body pb-20">
-      <header className="sticky top-0 z-30 w-full border-b bg-white/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <div className="min-h-screen bg-[#F8FAFC] font-body">
+      <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
-              <Sparkles className="text-primary-foreground w-6 h-6" />
+            <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+              <Sparkles className="text-primary-foreground w-7 h-7" />
             </div>
-            <h1 className="text-xl font-bold font-headline tracking-tight text-primary hidden sm:block">
+            <h1 className="text-2xl font-black font-headline tracking-tighter text-primary hidden sm:block">
               Schedily
             </h1>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {user ? (
               <>
                 <Link href="/groups">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary font-bold">
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-primary font-bold">
                     <Users className="w-4 h-4 mr-2" />
                     <span className="hidden md:inline">Groups</span>
                   </Button>
                 </Link>
                 <Link href="/network">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary font-medium">
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-primary font-bold">
                     <UserPlus className="w-4 h-4 mr-2" />
                     <span className="hidden md:inline">Network</span>
                   </Button>
                 </Link>
                 <Link href="/profile">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary font-medium">
+                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-primary font-bold">
                     <UserIcon className="w-4 h-4 mr-2" />
                     <span className="hidden md:inline">{user.displayName || "Profile"}</span>
                   </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive">
+                <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-slate-400 hover:text-destructive">
                   <LogOut className="w-4 h-4" />
                 </Button>
-                <div className="w-px h-6 bg-slate-200 mx-2" />
-                <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md flex items-center gap-2 rounded-xl">
-                  <Download className="w-4 h-4" /> <span className="hidden sm:inline">Get ICS</span>
+                <div className="w-px h-6 bg-slate-200 mx-1" />
+                <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 rounded-xl font-bold">
+                  <Download className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Bulk Sync</span>
                 </Button>
               </>
             ) : (
-              <Link href="/login">
-                <Button className="bg-primary hover:bg-primary/90 rounded-full px-6 shadow-lg shadow-primary/20">Login / Join</Button>
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-primary transition-colors">
+                  Sign In
+                </Link>
+                <Link href="/login">
+                  <Button className="bg-primary hover:bg-primary/90 rounded-xl px-6 font-bold shadow-lg shadow-primary/20">Get Started</Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-10 max-w-4xl">
+      <main className="relative">
         {!user ? (
-          <div className="flex flex-col items-center justify-center min-h-[80vh] py-20 relative overflow-hidden">
-            <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/5 rounded-full blur-[100px]" />
-            <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-accent/5 rounded-full blur-[100px]" />
-            
-            <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest mb-8">
-                <Zap className="w-3 h-3 fill-current" /> Powered by SYNC TECH Solutions
-              </div>
-              
-              <h2 className="text-5xl md:text-7xl font-black font-headline text-slate-900 mb-8 leading-[1.05] tracking-tight text-balance">
-                Team Social <span className="text-primary italic">Coordination</span>.
-              </h2>
-              
-              <p className="text-slate-600 text-xl md:text-2xl max-w-3xl mb-12 leading-relaxed font-medium">
-                The ultimate collaboration hub for businesses. Create <span className="text-slate-900 font-bold">Team Groups</span>, synchronize shared schedules, and tag colleagues instantly.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-6 mb-20">
-                <Link href="/login">
-                  <Button size="lg" className="px-12 py-8 h-auto text-xl rounded-2xl shadow-2xl shadow-primary/30 font-bold bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1 active:scale-95">
-                     Join the Network
-                  </Button>
-                </Link>
+          <div className="flex flex-col">
+            {/* Hero Section */}
+            <section className="relative pt-24 pb-32 overflow-hidden">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-accent/5 rounded-full blur-[150px]" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-                <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:border-primary/20 transition-all text-left">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">Group Synergy</h4>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    Form professional groups for your department and synchronize collective schedules in real-time.
-                  </p>
+              <div className="container mx-auto px-4 text-center">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-slate-200 shadow-sm text-primary font-black text-[10px] uppercase tracking-[0.2em] mb-12 animate-in fade-in slide-in-from-bottom-4">
+                  <Zap className="w-4 h-4 fill-current" /> Engineered by SYNC TECH Solutions
                 </div>
                 
-                <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:border-accent/20 transition-all text-left">
-                  <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center mb-6">
-                    <Download className="w-6 h-6 text-accent" />
+                <h1 className="text-6xl md:text-8xl font-black font-headline text-slate-900 mb-8 leading-[0.95] tracking-tighter">
+                  Professional Social <br />
+                  <span className="text-primary">Coordination.</span>
+                </h1>
+                
+                <p className="text-slate-500 text-xl md:text-2xl max-w-3xl mx-auto mb-14 leading-relaxed font-medium text-balance">
+                  The future of team synchronization. Tag teammates, dispatch retail shifts, and coordinate department schedules with a social-first ecosystem.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-24">
+                  <Link href="/login">
+                    <Button size="lg" className="px-14 py-8 h-auto text-xl rounded-2xl shadow-2xl shadow-primary/30 font-black bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1 active:scale-95">
+                       Join the Network
+                    </Button>
+                  </Link>
+                  <div className="flex -space-x-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-slate-100 overflow-hidden ring-2 ring-slate-50">
+                        <img src={`https://picsum.photos/seed/${i+40}/100/100`} alt="User" />
+                      </div>
+                    ))}
+                    <div className="w-12 h-12 rounded-full border-4 border-white bg-primary flex items-center justify-center text-white text-xs font-black shadow-lg">
+                      +1k
+                    </div>
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">Smart Sync</h4>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    One-click ICS generation for any shared shift, ensuring your team is always on the same page.
-                  </p>
                 </div>
 
-                <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:border-emerald-200 transition-all text-left">
-                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
-                    <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                <div className="max-w-6xl mx-auto rounded-[3rem] border-8 border-white bg-slate-200 shadow-2xl overflow-hidden relative group">
+                  <img 
+                    src="https://picsum.photos/seed/schedily-ui/1200/600" 
+                    alt="Schedily Hub Preview" 
+                    className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                    data-ai-hint="dashboard interface"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-10 left-10 right-10 flex items-center justify-between">
+                     <div className="flex items-center gap-4 text-white">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+                           <MessageSquare className="w-7 h-7" />
+                        </div>
+                        <div className="text-left">
+                           <p className="font-black text-sm uppercase tracking-widest">Real-Time Sync</p>
+                           <p className="text-white/80 font-medium">Coordinate with your entire department instantly.</p>
+                        </div>
+                     </div>
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">Professional Privacy</h4>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    Role-based group access ensures sensitive coordination data stays within your authorized team.
-                  </p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            {/* Stats Bar */}
+            <section className="bg-white border-y py-12">
+               <div className="container mx-auto px-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+                     <div>
+                        <p className="text-4xl font-black text-slate-900 mb-1">10k+</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Shifts Synced</p>
+                     </div>
+                     <div>
+                        <p className="text-4xl font-black text-slate-900 mb-1">500+</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Team Circles</p>
+                     </div>
+                     <div>
+                        <p className="text-4xl font-black text-slate-900 mb-1">99.9%</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Dispatch Uptime</p>
+                     </div>
+                     <div>
+                        <p className="text-4xl font-black text-slate-900 mb-1">100%</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Privacy Secured</p>
+                     </div>
+                  </div>
+               </div>
+            </section>
+
+            {/* Features Section */}
+            <section className="py-32 bg-slate-50">
+               <div className="container mx-auto px-4">
+                  <div className="text-center mb-24 space-y-4">
+                     <h2 className="text-4xl md:text-6xl font-black font-headline text-slate-900 tracking-tight">
+                        Built for <span className="text-accent italic">Performance.</span>
+                     </h2>
+                     <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto">
+                        Everything you need to coordinate complex team schedules in a high-speed professional environment.
+                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-xl shadow-slate-200/50 hover:border-primary/20 transition-all group">
+                      <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                        <Users className="w-8 h-8 text-primary" />
+                      </div>
+                      <h4 className="text-2xl font-black text-slate-900 mb-4">Social Tagging</h4>
+                      <p className="text-slate-500 font-medium leading-relaxed">
+                        Tag colleagues and groups just like on social media. Dispatch shifts instantly to their private mailbox and calendar.
+                      </p>
+                    </div>
+                    
+                    <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-xl shadow-slate-200/50 hover:border-accent/20 transition-all group">
+                      <div className="w-16 h-16 bg-accent/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                        <Globe className="w-8 h-8 text-accent" />
+                      </div>
+                      <h4 className="text-2xl font-black text-slate-900 mb-4">Bulk Synchronization</h4>
+                      <p className="text-slate-500 font-medium leading-relaxed">
+                        Generate a single .ics file for your entire professional schedule. Sync with Google, Apple, or Outlook in one click.
+                      </p>
+                    </div>
+
+                    <div className="p-10 bg-white border border-slate-100 rounded-[3rem] shadow-xl shadow-slate-200/50 hover:border-emerald-200 transition-all group">
+                      <div className="w-16 h-16 bg-emerald-50 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                        <BellRing className="w-8 h-8 text-emerald-600" />
+                      </div>
+                      <h4 className="text-2xl font-black text-slate-900 mb-4">AI Dispatch Alerts</h4>
+                      <p className="text-slate-500 font-medium leading-relaxed">
+                        Schedily AI crafts professional email notifications for every action, ensuring your team is always informed and engaged.
+                      </p>
+                    </div>
+                  </div>
+               </div>
+            </section>
+
+            {/* SYNC TECH Branding */}
+            <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full -mr-72 -mt-72 blur-[100px]" />
+               <div className="container mx-auto px-4 relative z-10">
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+                     <div className="max-w-xl space-y-6 text-center md:text-left">
+                        <div className="inline-flex items-center gap-2 text-white/80 font-black text-[10px] uppercase tracking-widest">
+                           <ShieldCheck className="w-4 h-4" /> Professional Integrity
+                        </div>
+                        <h3 className="text-4xl md:text-5xl font-black font-headline leading-tight tracking-tight">
+                           Developed by SYNC TECH Solutions
+                        </h3>
+                        <p className="text-primary-foreground/70 text-lg font-medium">
+                           Schedily is a premium coordination engine engineered for enterprise-grade performance and team synchronization.
+                        </p>
+                        <Link href="/login" className="inline-block pt-4">
+                           <Button variant="secondary" size="lg" className="rounded-xl px-10 h-14 font-black">
+                              Learn More at synctech.ie
+                           </Button>
+                        </Link>
+                     </div>
+                     <div className="w-full md:w-1/3 p-8 bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/10">
+                        <div className="flex items-center gap-4 mb-8">
+                           <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-black">SH</div>
+                           <div>
+                              <p className="font-black text-sm">Sheraz Hussain</p>
+                              <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">Lead Engineer, SYNC TECH</p>
+                           </div>
+                        </div>
+                        <p className="text-primary-foreground/80 italic font-medium leading-relaxed">
+                           "Our goal was to bridge the gap between social interaction and professional productivity. Schedily is the result."
+                        </p>
+                     </div>
+                  </div>
+               </div>
+            </section>
+
+            {/* Final CTA */}
+            <section className="py-32 bg-white">
+               <div className="container mx-auto px-4 text-center">
+                  <h3 className="text-5xl md:text-7xl font-black font-headline text-slate-900 mb-10 tracking-tighter">
+                     Ready to <span className="text-primary">Sync</span> Your Team?
+                  </h3>
+                  <Link href="/login">
+                    <Button size="lg" className="px-16 py-8 h-auto text-2xl rounded-2xl shadow-2xl shadow-primary/30 font-black bg-primary hover:bg-primary/90 transition-all active:scale-95">
+                       Get Schedily Now
+                    </Button>
+                  </Link>
+                  <p className="mt-8 text-slate-400 font-bold text-sm">Free for professional teams under 10 members.</p>
+               </div>
+            </section>
+
+            <footer className="py-12 border-t text-center text-slate-400 text-sm font-bold uppercase tracking-widest">
+               © {year} SYNC TECH Solutions. All rights reserved.
+            </footer>
           </div>
         ) : (
-          <>
+          <div className="container mx-auto px-4 py-10 max-w-4xl">
             <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-widest">
@@ -477,7 +615,7 @@ export default function SchedilyDashboard(props: {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
       </main>
       <Toaster />
