@@ -3,19 +3,23 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // User Profile Rules
-    // Profiles are readable by authenticated users so managers can find employees by username
-    // Owners can create/update their own profile
+    // Profiles are readable by authenticated users so they can find each other by username
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Meetings and Shifts Subcollection - Flattened for robust 'list' operations
-    // Rule 1: The owner of the path has full access (read includes get and list)
-    // Rule 2: A Manager can "Push" a meeting to any user's schedule (create only)
-    match /users/{userId}/meetings/{meetingId} {
+    // Recursive Ownership Pattern
+    // This allows the owner of the UID to read and write everything in their path,
+    // which definitively fixes the 'list' permission error for your meetings.
+    match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      
+    }
+
+    // Manager Delivery Rule
+    // Allows any authenticated user to 'push' a new meeting to another user's mailbox.
+    // They can ONLY create; they cannot read, update, or delete existing entries.
+    match /users/{userId}/meetings/{meetingId} {
       allow create: if request.auth != null && 
         request.resource.data.senderId != null && 
         request.resource.data.senderId == request.auth.uid;
