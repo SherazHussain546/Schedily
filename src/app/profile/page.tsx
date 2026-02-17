@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -27,7 +26,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch full profile from Firestore
+  // Fetch full profile from Firestore to get bio and other details
   const profileRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, "users", user.uid);
@@ -35,6 +34,7 @@ export default function ProfilePage() {
 
   const { data: profileData, isLoading: isProfileLoading } = useDoc(profileRef);
 
+  // Sync local state when profile data loads
   useEffect(() => {
     if (profileData) {
       setDisplayName(profileData.displayName || "");
@@ -62,10 +62,10 @@ export default function ProfilePage() {
     
     setIsSaving(true);
     try {
-      // 1. Update Firebase Auth Profile
+      // 1. Update Firebase Auth Profile (Global Auth state)
       await updateProfile(user, { displayName });
 
-      // 2. Update Firestore Profile Document
+      // 2. Update Firestore Profile Document (Searchable social profile)
       const userRef = doc(db, "users", user.uid);
       updateDocumentNonBlocking(userRef, {
         displayName,
@@ -109,144 +109,146 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-background p-4 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-slate-50 p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-2xl">
         <Link href="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Dashboard
         </Link>
 
-        <Card className="shadow-xl overflow-hidden border-t-4 border-t-primary">
-          <CardHeader className="bg-muted/30 pb-10">
-            <div className="flex flex-col items-center text-center pt-4">
-              <Avatar className="w-24 h-24 border-4 border-background shadow-lg mb-4">
-                <AvatarImage src={user.photoURL || ""} />
-                <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+        <Card className="shadow-2xl overflow-hidden border-none rounded-[2rem]">
+          <CardHeader className="bg-primary text-primary-foreground pb-12 pt-10">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative mb-6">
+                <Avatar className="w-28 h-28 border-4 border-white/20 shadow-2xl">
+                  <AvatarImage src={user.photoURL || ""} />
+                  <AvatarFallback className="text-3xl font-black bg-white text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="absolute -bottom-2 -right-2 bg-emerald-500 p-2 rounded-full border-4 border-primary">
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                </div>
+              </div>
               
               {!isEditing ? (
                 <>
-                  <CardTitle className="text-3xl font-headline font-bold">
-                    {displayName || "Schedily User"}
+                  <CardTitle className="text-3xl font-headline font-black tracking-tight">
+                    {displayName || "Professional User"}
                   </CardTitle>
-                  <CardDescription className="text-lg">
-                    {user.isAnonymous ? "Guest Profile" : "Professional Member"}
+                  <CardDescription className="text-primary-foreground/80 text-lg mt-1">
+                    @{displayName?.toLowerCase().replace(/\s+/g, '') || "member"}
                   </CardDescription>
                   <Button 
-                    variant="outline" 
+                    variant="secondary" 
                     size="sm" 
-                    className="mt-4 rounded-full"
+                    className="mt-6 rounded-xl font-bold px-6"
                     onClick={() => setIsEditing(true)}
                   >
-                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit Profile
+                    <Edit2 className="w-4 h-4 mr-2" /> Edit My Details
                   </Button>
                 </>
               ) : (
                 <div className="w-full max-w-sm space-y-4 mt-2">
                   <div className="space-y-2 text-left">
-                    <Label htmlFor="displayName">Display Name</Label>
+                    <Label htmlFor="displayName" className="text-white/80 font-bold">Display Name</Label>
                     <Input 
                       id="displayName"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="Your professional name"
+                      placeholder="e.g. Jane Doe"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40 h-12 rounded-xl"
                     />
-                  </div>
-                  <div className="flex gap-2 justify-center">
-                    <Button 
-                      size="sm" 
-                      onClick={handleUpdateProfile}
-                      disabled={isSaving}
-                    >
-                      {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <Save className="w-3.5 h-3.5 mr-2" />}
-                      Save Changes
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        setIsEditing(false);
-                        setDisplayName(profileData?.displayName || user.displayName || "");
-                      }}
-                      disabled={isSaving}
-                    >
-                      <X className="w-3.5 h-3.5 mr-2" /> Cancel
-                    </Button>
                   </div>
                 </div>
               )}
             </div>
           </CardHeader>
           
-          <CardContent className="space-y-6 pt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-6">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                  <Mail className="w-4 h-4" /> Email Address
+          <CardContent className="space-y-8 pt-10 px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-1.5 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-black uppercase tracking-widest">
+                  <Mail className="w-3.5 h-3.5" /> Email Address
                 </div>
-                <div className="text-lg font-semibold">{user.email || "Anonymous Access"}</div>
+                <div className="text-sm font-bold text-slate-900">{user.email || "Guest User"}</div>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                  <ShieldCheck className="w-4 h-4" /> Account Type
+              <div className="space-y-1.5 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground font-black uppercase tracking-widest">
+                  <Calendar className="w-3.5 h-3.5" /> Network Member Since
                 </div>
-                <div className="text-lg font-semibold">
-                  {user.isAnonymous ? "Anonymous / Temporary" : "Standard Email"}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                  <Calendar className="w-4 h-4" /> Member Since
-                </div>
-                <div className="text-lg font-semibold">
-                  {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : "Recently"}
+                <div className="text-sm font-bold text-slate-900">
+                  {user.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : "Today"}
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                  <Info className="w-4 h-4" /> Professional Bio
+                <div className="flex items-center gap-2 text-sm text-slate-900 font-black uppercase tracking-widest">
+                  <Info className="w-4 h-4 text-primary" /> Professional Bio
                 </div>
-                {!isEditing && (
-                   <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => setIsEditing(true)}>
-                     <Edit2 className="w-3 h-3 mr-1" /> Edit
-                   </Button>
-                )}
               </div>
               
               {!isEditing ? (
-                <p className="text-slate-700 leading-relaxed italic bg-slate-50 p-4 rounded-xl border border-dashed">
-                  {bio || "Tell colleagues about your professional role, skills, or scheduling preferences."}
+                <p className="text-slate-600 leading-relaxed italic bg-white p-6 rounded-2xl border border-slate-100 shadow-sm min-h-[100px]">
+                  {bio || "Your professional summary will appear here. Tell your network about your role, expertise, or coordination preferences."}
                 </p>
               ) : (
                 <Textarea 
-                  placeholder="Tell colleagues about your professional role..."
+                  placeholder="Tell colleagues about your professional role, skills, or scheduling preferences..."
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="min-h-[120px]"
+                  className="min-h-[140px] rounded-2xl focus:ring-primary"
                 />
               )}
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between border-t p-6 bg-slate-50">
-            <Button variant="outline" onClick={() => router.push("/")}>
-              Manage Schedule
-            </Button>
-            <Button variant="destructive" onClick={handleSignOut} className="flex items-center gap-2">
-              <LogOut className="w-4 h-4" /> Sign Out
-            </Button>
+          <CardFooter className="flex justify-between items-center p-8 bg-slate-50 border-t">
+            {!isEditing ? (
+              <>
+                <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl font-bold px-6">
+                  Back to Hub
+                </Button>
+                <Button variant="destructive" onClick={handleSignOut} className="rounded-xl font-bold px-6 flex items-center gap-2">
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </Button>
+              </>
+            ) : (
+              <div className="flex gap-3 w-full justify-end">
+                 <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      setIsEditing(false);
+                      setDisplayName(profileData?.displayName || user.displayName || "");
+                      setBio(profileData?.bio || "");
+                    }}
+                    className="rounded-xl font-bold px-6"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleUpdateProfile}
+                    disabled={isSaving}
+                    className="rounded-xl font-bold px-8 shadow-lg shadow-primary/20"
+                  >
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                    Update Profile
+                  </Button>
+              </div>
+            )}
           </CardFooter>
         </Card>
 
-        <div className="mt-8 text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          Professional Network Active
+        <div className="mt-10 text-center flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
+            <Sparkles className="w-4 h-4 text-primary" />
+            Professional Identity Secure
+          </div>
+          <p className="text-xs text-slate-400 max-w-xs leading-tight">
+            Changes to your display name will update your tagging identifier across the network.
+          </p>
         </div>
       </div>
     </div>
