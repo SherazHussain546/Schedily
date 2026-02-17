@@ -1,8 +1,9 @@
+
 {
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Represents a user's profile information, searchable by managers for shift delivery.",
+      "description": "Represents a user's profile information for discovery and networking.",
       "type": "object",
       "properties": {
         "id": {
@@ -16,7 +17,11 @@
         },
         "displayName": {
           "type": "string",
-          "description": "User's unique username for identification."
+          "description": "User's unique username."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Brief professional summary."
         },
         "createdAt": {
           "type": "string",
@@ -37,16 +42,15 @@
     },
     "Meeting": {
       "title": "Meeting",
-      "description": "Represents a meeting or shift. Can be private or pushed to another user's schedule.",
+      "description": "Represents a shift or meeting entry.",
       "type": "object",
       "properties": {
         "userId": {
           "type": "string",
-          "description": "The UID of the recipient."
+          "description": "Owner of the schedule entry."
         },
         "title": {
-          "type": "string",
-          "description": "Title of the entry."
+          "type": "string"
         },
         "type": {
           "type": "string",
@@ -60,12 +64,7 @@
           "enum": [
             "pending",
             "accepted"
-          ],
-          "description": "The acceptance status of the received shift."
-        },
-        "employeeName": {
-          "type": "string",
-          "description": "Name of the employee assigned."
+          ]
         },
         "date": {
           "type": "string",
@@ -80,28 +79,13 @@
         "location": {
           "type": "string"
         },
-        "description": {
-          "type": "string"
-        },
-        "emails": {
-          "type": "string"
-        },
-        "attachments": {
-          "type": "string"
-        },
         "senderId": {
-          "type": "string",
-          "description": "UID of the person who pushed the entry."
+          "type": "string"
         },
         "senderName": {
-          "type": "string",
-          "description": "Display name of the sender."
+          "type": "string"
         },
         "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
           "type": "string",
           "format": "date-time"
         }
@@ -113,9 +97,30 @@
         "date",
         "startTime",
         "endTime",
-        "createdAt",
-        "updatedAt"
+        "createdAt"
       ]
+    },
+    "Connection": {
+      "title": "Connection",
+      "description": "Represents a follow relationship between users.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user who is following."
+        },
+        "targetId": {
+          "type": "string",
+          "description": "The user being followed."
+        },
+        "targetName": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
     }
   },
   "auth": {
@@ -129,13 +134,19 @@
       "schema": {
         "$ref": "#/backend/entities/UserProfile"
       },
-      "description": "User profile document."
+      "description": "User profile."
     },
     "/users/{userId}/meetings/{meetingId}": {
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "Individual schedule entry in a user's collection, supporting private entries and pushes from managers."
+      "description": "Schedule entries."
+    },
+    "/users/{userId}/following/{followedUserId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Connection"
+      },
+      "description": "Users this user is following."
     }
   }
 }

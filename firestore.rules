@@ -1,27 +1,26 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. PROFILES & DISCOVERY
-    // Allows any authenticated user to read profile documents.
-    // This is essential for searching for an employee's UID by their username
-    // when a manager wants to "Deliver" a shift.
+    // PUBLIC DISCOVERY: Anyone can find profiles to follow them
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
-
-      // 2. SCHEDULE & MAILBOX
-      // Explicitly manage permissions for the meetings subcollection.
-      // In Firestore, 'read' permission on a document wildcard allows 'list' on the collection.
-      match /meetings/{meetingId} {
-        // The owner of the account has full access to their own schedule.
-        // This permits the 'list' method used in the Dashboard.
+      
+      // MASTER KEY: The owner has full access to list/read/write everything in their folder
+      match /{allPaths=**} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
-        
-        // MAILBOX PUSH: Allows any authenticated user to CREATE a document in another user's collection.
-        // This supports the manager "Push" model where they deliver shifts to an employee's mailbox.
-        // Managers cannot read, list, update, or delete existing entries in someone else's mailbox.
+      }
+      
+      // MAILBOX: Allows others to push a meeting to this user
+      match /meetings/{meetingId} {
         allow create: if request.auth != null;
+      }
+      
+      // NETWORK: Users can follow others
+      match /following/{followedUserId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
   }
