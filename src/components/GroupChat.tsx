@@ -13,8 +13,9 @@ import { collection, query, orderBy, serverTimestamp, limit } from 'firebase/fir
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, Loader2, Paperclip, X, Image as ImageIcon, Film } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface GroupChatProps {
   groupId: string;
@@ -25,7 +26,10 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const { user } = useUser();
   const db = useFirestore();
   const [message, setMessage] = useState('');
+  const [mediaPreview, setMediaPreview] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesQuery = useMemoFirebase(() => {
     if (!db || !groupId) return null;
@@ -44,18 +48,40 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     }
   }, [messages]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const type = file.type.startsWith('video/') ? 'video' : 'image';
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setMediaPreview({
+        url: event.target?.result as string,
+        type: type as 'image' | 'video'
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !user || !db) return;
+    if ((!message.trim() && !mediaPreview) || !user || !db) return;
 
+    setIsUploading(true);
     const messagesRef = collection(db, 'groups', groupId, 'messages');
+    
     addDocumentNonBlocking(messagesRef, {
       text: message.trim(),
       senderId: user.uid,
       senderName: user.displayName || 'Teammate',
+      mediaUrl: mediaPreview?.url || null,
+      mediaType: mediaPreview?.type || null,
       createdAt: serverTimestamp(),
     });
+
     setMessage('');
+    setMediaPreview(null);
+    setIsUploading(false);
   };
 
   return (
@@ -65,8 +91,8 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           <MessageSquare className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="font-bold text-slate-900 leading-tight">{groupName} Chat</h3>
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Knowledge Base & Discussion</p>
+          <h3 className="font-bold text-slate-900 leading-tight">{groupName} Hub</h3>
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Social Coordination & Media</p>
         </div>
       </header>
 
@@ -76,7 +102,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
             <Loader2 className="w-6 h-6 animate-spin text-primary/30" />
           </div>
         ) : messages && messages.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {messages.map((msg: any) => {
               const isMe = msg.senderId === user?.uid;
               return (
@@ -88,17 +114,40 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                   )}
                 >
                   {!isMe && (
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-2">
                       {msg.senderName}
                     </span>
                   )}
+                  
                   <div className={cn(
-                    "px-4 py-3 rounded-2xl text-sm font-medium shadow-sm",
+                    "flex flex-col gap-2 rounded-2xl p-1.5 shadow-sm transition-all overflow-hidden",
                     isMe 
                       ? "bg-primary text-white rounded-tr-none" 
                       : "bg-white text-slate-900 rounded-tl-none border border-slate-100"
                   )}>
-                    {msg.text}
+                    {msg.mediaUrl && (
+                      <div className="relative rounded-xl overflow-hidden bg-black/5 aspect-video w-full max-w-sm">
+                        {msg.mediaType === 'image' ? (
+                          <img 
+                            src={msg.mediaUrl} 
+                            alt="Shared media" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <video 
+                            src={msg.mediaUrl} 
+                            controls 
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    )}
+                    
+                    {msg.text && (
+                      <div className="px-3 py-1.5 text-sm font-medium">
+                        {msg.text}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -111,28 +160,67 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
               <MessageSquare className="w-8 h-8" />
             </div>
             <p className="text-slate-400 text-sm font-medium">
-              Start the discussion! Share knowledge and coordinate with your team.
+              Start the discussion! Share images, videos, and coordinate with your team.
             </p>
           </div>
         )}
       </ScrollArea>
 
-      <form onSubmit={handleSend} className="p-4 bg-white border-t flex gap-2">
-        <Input 
-          placeholder="Message the team..." 
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          className="rounded-xl h-12 bg-slate-50 border-none focus-visible:ring-primary"
-        />
-        <Button 
-          type="submit" 
-          size="icon" 
-          disabled={!message.trim()}
-          className="rounded-xl h-12 w-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 shrink-0"
-        >
-          <Send className="w-5 h-5" />
-        </Button>
-      </form>
+      <div className="p-4 bg-white border-t space-y-4">
+        {mediaPreview && (
+          <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-primary shadow-lg animate-in zoom-in-95">
+            {mediaPreview.type === 'image' ? (
+              <img src={mediaPreview.url} alt="Preview" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+                <Film className="w-8 h-8 text-white/50" />
+              </div>
+            )}
+            <button 
+              onClick={() => setMediaPreview(null)}
+              className="absolute top-1 right-1 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSend} className="flex gap-2 items-center">
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            accept="image/*,video/*"
+            onChange={handleFileChange}
+          />
+          <Button 
+            type="button" 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => fileInputRef.current?.click()}
+            className="rounded-xl h-12 w-12 text-slate-400 hover:text-primary hover:bg-primary/5 transition-all"
+          >
+            <Paperclip className="w-5 h-5" />
+          </Button>
+
+          <Input 
+            placeholder="Type a message..." 
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="rounded-xl h-12 bg-slate-50 border-none focus-visible:ring-primary font-medium"
+            disabled={isUploading}
+          />
+          
+          <Button 
+            type="submit" 
+            size="icon" 
+            disabled={(!message.trim() && !mediaPreview) || isUploading}
+            className="rounded-xl h-12 w-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 shrink-0 transition-transform active:scale-95"
+          >
+            {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

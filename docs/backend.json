@@ -129,15 +129,17 @@
     },
     "ChatMessage": {
       "title": "ChatMessage",
-      "description": "A message sent within a group chat.",
+      "description": "A message sent within a group chat, supporting text and social media (images/videos).",
       "type": "object",
       "properties": {
         "senderId": { "type": "string" },
         "senderName": { "type": "string" },
         "text": { "type": "string" },
+        "mediaUrl": { "type": "string", "description": "Optional URL for shared image or video." },
+        "mediaType": { "type": "string", "enum": ["image", "video"], "description": "Type of media attached." },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["senderId", "senderName", "text", "createdAt"]
+      "required": ["senderId", "senderName", "createdAt"]
     },
     "Connection": {
       "title": "Connection",
