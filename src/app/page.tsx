@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, use } from "react";
@@ -42,6 +41,7 @@ import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { generateICSContent, downloadICS } from "@/lib/calendar-utils";
+import { triggerNotification } from "@/app/actions/notifications";
 
 export default function SchedilyDashboard(props: {
   params: Promise<any>;
@@ -180,6 +180,7 @@ export default function SchedilyDashboard(props: {
         return;
       }
 
+      const targetUserData = querySnapshot.docs[0].data();
       const targetUid = querySnapshot.docs[0].id;
       if (targetUid === user.uid) return;
 
@@ -196,7 +197,16 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      toast({ title: "Shift Tagged!", description: `Sent to @${targetUsername}'s mailbox.` });
+      // Notify the recipient via email (simulation)
+      triggerNotification({
+        recipientEmail: targetUserData.email,
+        recipientName: targetUserData.displayName || 'Professional',
+        senderName: user.displayName || 'A colleague',
+        type: meeting.type as any,
+        content: meeting.title || 'New coordination task'
+      });
+
+      toast({ title: "Shift Tagged!", description: `Sent to @${targetUsername}'s mailbox and notified via email.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Dispatch Failed" });
     }
@@ -218,7 +228,24 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      toast({ title: "Group Broadcast!", description: `Shared with ${groupName}.` });
+      // Notify group members (In a real app, this would be a bulk operation)
+      const membersRef = collection(db, "groups", groupId, "members");
+      const membersSnap = await getDocs(membersRef);
+      membersSnap.docs.forEach(memberDoc => {
+        const m = memberDoc.data();
+        if (m.userId !== user.uid && m.email) {
+          triggerNotification({
+            recipientEmail: m.email,
+            recipientName: m.displayName,
+            senderName: user.displayName || 'Teammate',
+            type: meeting.type as any,
+            groupName: groupName,
+            content: meeting.title
+          });
+        }
+      });
+
+      toast({ title: "Group Broadcast!", description: `Shared with ${groupName}. Members notified.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Group Dispatch Failed" });
     }
@@ -442,4 +469,3 @@ export default function SchedilyDashboard(props: {
     </div>
   );
 }
-

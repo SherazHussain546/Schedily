@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, use } from "react";
@@ -33,6 +32,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { GroupChat } from "@/components/GroupChat";
+import { triggerNotification } from "@/app/actions/notifications";
 
 export default function GroupsPage(props: {
   params: Promise<any>;
@@ -80,6 +80,7 @@ export default function GroupsPage(props: {
       await setDoc(memberRef, {
         userId: user.uid,
         displayName: user.displayName || "Owner",
+        email: user.email,
         role: "owner"
       });
 
@@ -110,15 +111,26 @@ export default function GroupsPage(props: {
     }
   };
 
-  const addMember = (groupId: string, targetUser: any) => {
-    if (!db) return;
+  const addMember = (groupId: string, groupName: string, targetUser: any) => {
+    if (!db || !user) return;
     const memberRef = doc(db, "groups", groupId, "members", targetUser.id);
     setDocumentNonBlocking(memberRef, {
       userId: targetUser.id,
       displayName: targetUser.displayName,
+      email: targetUser.email,
       role: "member"
     });
-    toast({ title: "Member Added", description: `@${targetUser.displayName} added to group.` });
+
+    // Notify user of invitation
+    triggerNotification({
+      recipientEmail: targetUser.email,
+      recipientName: targetUser.displayName,
+      senderName: user.displayName || 'Teammate',
+      type: 'invitation',
+      groupName: groupName
+    });
+
+    toast({ title: "Member Added", description: `@${targetUser.displayName} added and notified via email.` });
   };
 
   if (isUserLoading) {
@@ -243,7 +255,7 @@ export default function GroupsPage(props: {
                                       </div>
                                       <span className="font-bold text-sm">@{u.displayName}</span>
                                     </div>
-                                    <Button size="sm" className="rounded-xl font-bold h-8" onClick={() => addMember(group.id, u)}>Add</Button>
+                                    <Button size="sm" className="rounded-xl font-bold h-8" onClick={() => addMember(group.id, group.name, u)}>Add</Button>
                                   </div>
                                 ))}
                               </div>

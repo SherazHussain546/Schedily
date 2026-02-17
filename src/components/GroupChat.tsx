@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -9,7 +8,7 @@ import {
   useMemoFirebase,
   addDocumentNonBlocking 
 } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, limit } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, limit, getDocs } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,6 +26,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { triggerNotification } from '@/app/actions/notifications';
 
 interface GroupChatProps {
   groupId: string;
@@ -76,7 +76,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     reader.readAsDataURL(file);
   };
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!message.trim() && !mediaPreview) || !user || !db) return;
 
@@ -91,6 +91,27 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       mediaType: mediaPreview?.type || null,
       createdAt: serverTimestamp(),
     });
+
+    // Notify group members about the new message
+    try {
+      const membersRef = collection(db, 'groups', groupId, 'members');
+      const membersSnap = await getDocs(membersRef);
+      membersSnap.docs.forEach(memberDoc => {
+        const m = memberDoc.data();
+        if (m.userId !== user.uid && m.email) {
+          triggerNotification({
+            recipientEmail: m.email,
+            recipientName: m.displayName,
+            senderName: user.displayName || 'Teammate',
+            type: 'message',
+            groupName: groupName,
+            content: message.trim() || (mediaPreview ? 'Sent an attachment' : '')
+          });
+        }
+      });
+    } catch (err) {
+      console.warn('Notification sync failed', err);
+    }
 
     setMessage('');
     setMediaPreview(null);
