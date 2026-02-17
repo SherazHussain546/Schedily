@@ -7,22 +7,20 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
-    }
 
-    // Recursive Ownership Pattern
-    // This allows the owner of the UID to read and write everything in their path,
-    // which definitively fixes the 'list' permission error for your meetings.
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Manager Delivery Rule
-    // Allows any authenticated user to 'push' a new meeting to another user's mailbox.
-    // They can ONLY create; they cannot read, update, or delete existing entries.
-    match /users/{userId}/meetings/{meetingId} {
-      allow create: if request.auth != null && 
-        request.resource.data.senderId != null && 
-        request.resource.data.senderId == request.auth.uid;
+      // Meetings Subcollection
+      // Nested matches ensure that the {userId} variable is consistently applied.
+      match /meetings/{meetingId} {
+        // 1. Owner Access: If you are the owner of this path, you have full control.
+        // This explicitly covers 'list' (queries), 'get', and all 'write' operations.
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // 2. Manager Delivery: Allow other users to "Push" a new meeting to this user.
+        // They can ONLY create; they cannot read existing entries or modify them.
+        allow create: if request.auth != null && 
+          request.resource.data.senderId != null && 
+          request.resource.data.senderId == request.auth.uid;
+      }
     }
   }
 }
