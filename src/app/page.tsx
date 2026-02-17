@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,14 +11,16 @@ import { toast } from "@/hooks/use-toast";
 export default function MeetingMaestro() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [year, setYear] = useState<number>(2024);
 
   useEffect(() => {
     setHydrated(true);
+    setYear(new Date().getFullYear());
     // Initial meeting
     const today = new Date().toISOString().split('T')[0];
     setMeetings([
       {
-        id: crypto.randomUUID(),
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
         title: "",
         date: today,
         startTime: "09:00",
@@ -67,7 +68,6 @@ export default function MeetingMaestro() {
   };
 
   const handleDownload = () => {
-    // Basic validation
     const hasEmptyTitle = meetings.some((m) => !m.title.trim());
     if (hasEmptyTitle) {
       toast({
@@ -85,8 +85,6 @@ export default function MeetingMaestro() {
       description: "Your schedule has been exported successfully.",
     });
   };
-
-  if (!hydrated) return null;
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -114,36 +112,47 @@ export default function MeetingMaestro() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-10 max-w-4xl">
-        <div className="mb-10 text-center sm:text-left">
-          <h2 className="text-3xl font-bold font-headline text-slate-800 mb-2">Build Your Schedule</h2>
-          <p className="text-muted-foreground text-lg">
-            Easily create meeting events and export them directly to your calendar.
-          </p>
-        </div>
+        {!hydrated ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+             <div className="animate-pulse flex flex-col items-center gap-4">
+                <div className="w-12 h-12 bg-muted rounded-full"></div>
+                <div className="h-4 w-48 bg-muted rounded"></div>
+             </div>
+          </div>
+        ) : (
+          <>
+            <div className="mb-10 text-center sm:text-left">
+              <h2 className="text-3xl font-bold font-headline text-slate-800 mb-2">Build Your Schedule</h2>
+              <p className="text-muted-foreground text-lg">
+                Easily create meeting events and export them directly to your calendar.
+              </p>
+            </div>
 
-        <div className="space-y-4">
-          {meetings.map((meeting) => (
-            <MeetingCard
-              key={meeting.id}
-              meeting={meeting}
-              onUpdate={updateMeeting}
-              onRemove={removeMeeting}
-            />
-          ))}
-        </div>
+            <div className="space-y-4">
+              {meetings.map((meeting) => (
+                <MeetingCard
+                  key={meeting.id}
+                  meeting={meeting}
+                  onUpdate={updateMeeting}
+                  onRemove={removeMeeting}
+                />
+              ))}
+            </div>
 
-        <div className="mt-12 flex flex-col items-center justify-center p-12 border-2 border-dashed border-primary/20 rounded-3xl bg-primary/5 group">
-           <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-              <LayoutDashboard className="w-8 h-8 text-primary" />
-           </div>
-           <p className="text-slate-600 font-medium mb-6">Want to add another session?</p>
-           <Button variant="secondary" onClick={addMeeting} className="bg-white border hover:bg-slate-50 text-primary font-semibold px-8 py-6 h-auto rounded-2xl shadow-sm">
-             <CalendarPlus className="w-5 h-5 mr-2" /> Add New Meeting Card
-           </Button>
-        </div>
+            <div className="mt-12 flex flex-col items-center justify-center p-12 border-2 border-dashed border-primary/20 rounded-3xl bg-primary/5 group">
+               <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                  <LayoutDashboard className="w-8 h-8 text-primary" />
+               </div>
+               <p className="text-slate-600 font-medium mb-6">Want to add another session?</p>
+               <Button variant="secondary" onClick={addMeeting} className="bg-white border hover:bg-slate-50 text-primary font-semibold px-8 py-6 h-auto rounded-2xl shadow-sm">
+                 <CalendarPlus className="w-5 h-5 mr-2" /> Add New Meeting Card
+               </Button>
+            </div>
+          </>
+        )}
 
         <div className="mt-20 pt-10 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Meeting Maestro. Professional scheduling made simple.</p>
+          <p>© {year} Meeting Maestro. Professional scheduling made simple.</p>
         </div>
       </main>
 
