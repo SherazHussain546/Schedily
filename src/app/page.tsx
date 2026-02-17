@@ -22,7 +22,8 @@ import {
   MessageSquare,
   ShieldCheck,
   Zap,
-  Clock
+  Clock,
+  CalendarDays
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -81,6 +82,7 @@ export default function SchedilyDashboard(props: {
   const today = new Date().toISOString().split('T')[0];
   const currentMeetings = allMeetings?.filter(m => m.date >= today) || [];
   const expiredMeetings = allMeetings?.filter(m => m.date < today) || [];
+  const acceptedMeetings = currentMeetings.filter(m => m.status !== 'pending');
 
   const handleSignOut = async () => {
     try {
@@ -162,7 +164,7 @@ export default function SchedilyDashboard(props: {
     }
     const content = generateICSContent(acceptedOnly);
     downloadICS(content, `schedule-${today}.ics`);
-    toast({ title: "Calendar Generated" });
+    toast({ title: "Calendar Generated", description: `Exported ${acceptedOnly.length} items.` });
   };
 
   const shareWithUser = async (meeting: Meeting, targetUsername: string) => {
@@ -359,6 +361,28 @@ export default function SchedilyDashboard(props: {
               </div>
             </div>
 
+            {acceptedMeetings.length > 0 && (
+              <div className="mb-10 p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/20 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <CalendarDays className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">Full Schedule Sync</h3>
+                    <p className="text-slate-500 font-medium">Bulk export all {acceptedMeetings.length} coordination entries to your calendar.</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleDownload} 
+                  size="lg"
+                  className="bg-primary hover:bg-primary/90 text-white font-black rounded-2xl h-14 px-8 shadow-xl shadow-primary/20 transform transition-all active:scale-95 flex items-center gap-3"
+                >
+                  <Download className="w-5 h-5" /> Export Entire Schedule (.ics)
+                </Button>
+              </div>
+            )}
+
             {expiredMeetings.length > 0 && (
               <div className="mb-10 p-5 bg-white border border-slate-100 rounded-3xl flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
@@ -418,3 +442,4 @@ export default function SchedilyDashboard(props: {
     </div>
   );
 }
+
