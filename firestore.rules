@@ -2,25 +2,27 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. RECURSIVE OWNER ACCESS
-    // If a document or subcollection is under /users/{userId}/, the owner has full control.
-    // Using {allPaths=**} ensures that 'list' (queries) on subcollections are always authorized for the owner.
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // 2. PROFILE SEARCH LOOKUP
-    // Allows managers to find employees by username. 
-    // This allows get (by ID) and list (querying by username) for all authenticated users.
+    // 1. PUBLIC DIRECTORY
+    // Allows any logged-in user to find another user's profile (needed for the 'Push' delivery feature).
+    // Users can only write to their own profile.
     match /users/{userId} {
       allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 3. MANAGER "PUSH" PERMISSION
-    // Allows a manager to create a document in an employee's meeting list.
-    // They can ONLY 'create'; they cannot read, edit, or delete existing entries.
-    // They must identify themselves as the sender for accountability.
+    // 2. PRIVATE SCHEDULE & MAILBOX
+    // This handles the meetings subcollection for every user.
     match /users/{userId}/meetings/{meetingId} {
+      
+      // OWNER ACCESS: 
+      // If the path's userId matches your logged-in ID, you have full control.
+      // This explicitly allows the 'list' operation (queries) on the whole collection.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // MANAGER DELIVERY (The 'Mailbox Slot'):
+      // Allows a third party to 'create' a document in this user's folder.
+      // They cannot read, list, update, or delete. They can only 'drop off' new shifts.
+      // We verify they are who they say they are using the senderId field.
       allow create: if request.auth != null && 
         request.resource.data.senderId != null && 
         request.resource.data.senderId == request.auth.uid;
