@@ -34,7 +34,7 @@ import {
   Info,
   UserX
 } from "lucide-react";
-import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
 import { signOut, updateProfile, deleteUser } from "firebase/auth";
 import { doc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
@@ -136,11 +136,16 @@ export default function ProfilePage(props: {
 
       // 2. Update Firestore Profile Document (Searchable social profile)
       const userRef = doc(db, "users", user.uid);
-      updateDocumentNonBlocking(userRef, {
+      // Use setDocumentNonBlocking with merge: true to handle both initial creation and updates
+      setDocumentNonBlocking(userRef, {
+        id: user.uid,
+        email: user.email || "",
         displayName,
         bio,
         updatedAt: serverTimestamp(),
-      });
+        // Only set createdAt if the document doesn't already exist
+        ...(!profileData ? { createdAt: serverTimestamp() } : {})
+      }, { merge: true });
 
       toast({
         title: "Profile Updated",

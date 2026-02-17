@@ -5,7 +5,9 @@ service cloud.firestore {
     
     // PROFESSIONAL PROFILES
     match /users/{userId} {
+      // Allow authenticated professionals to see profiles for discovery
       allow read: if request.auth != null;
+      // Allow owners full control over their own professional profile
       allow write: if request.auth != null && request.auth.uid == userId;
       
       match /meetings/{meetingId} {
