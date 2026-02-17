@@ -56,6 +56,14 @@
             "shift"
           ]
         },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "accepted"
+          ],
+          "description": "The acceptance status of the received shift."
+        },
         "employeeName": {
           "type": "string",
           "description": "Name of the employee assigned."

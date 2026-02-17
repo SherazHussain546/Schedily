@@ -3,26 +3,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. USER PROFILES
-    // Profiles are searchable by any logged-in user so managers can find employees.
-    // Only the owner can edit their own profile details.
+    // 1. PUBLIC PROFILES
+    // Needed so managers can find employee IDs by searching for their username.
     match /users/{userId} {
-      allow get, list: if request.auth != null;
+      allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 2. MEETINGS / SHIFTS (The Mailbox Pattern)
-    // This subcollection is where a user's schedule lives.
+    // 2. THE MAILBOX (Meetings)
     match /users/{userId}/meetings/{meetingId} {
       
-      // MASTER KEY: The authenticated owner of the folder has full access.
-      // This explicitly allows 'list' operations for the owner's dashboard queries.
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      // FULL ACCESS for the Owner of the schedule.
+      // This explicitly allows 'list' operations (queries) for the owner.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // DELIVERY SLOT: Managers (or the owner) can create new entries.
-      // This allows the "Push" model where a manager drops a shift into an employee's schedule.
-      allow create: if request.auth != null && 
-        (request.auth.uid == userId || request.resource.data.senderId == request.auth.uid);
+      // DELIVERY SLOT: Any authenticated user can "drop off" a meeting/shift.
+      // They cannot see the folder contents, only add to it.
+      allow create: if request.auth != null;
     }
   }
 }

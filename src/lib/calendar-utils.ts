@@ -1,9 +1,12 @@
+
 export type ItemType = 'meeting' | 'shift';
+export type MeetingStatus = 'pending' | 'accepted';
 
 export interface Meeting {
   id: string;
   title: string;
   type: ItemType;
+  status?: MeetingStatus;
   employeeName?: string;
   emails?: string;
   description?: string;
@@ -12,6 +15,8 @@ export interface Meeting {
   startTime: string;
   endTime: string;
   location: string;
+  senderId?: string;
+  senderName?: string;
 }
 
 /**
@@ -29,10 +34,7 @@ function formatToICSDate(dateStr: string, timeStr: string): string {
  */
 function getAlarmTrigger(dateStr: string, startTimeStr: string): string {
   try {
-    // Construct start date object
     const start = new Date(`${dateStr}T${startTimeStr}:00`);
-    
-    // Target is the day before at 20:00
     const target = new Date(start);
     target.setDate(target.getDate() - 1);
     target.setHours(20, 0, 0, 0);
@@ -40,7 +42,6 @@ function getAlarmTrigger(dateStr: string, startTimeStr: string): string {
     const diffMs = start.getTime() - target.getTime();
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
     
-    // If the diff is negative or zero, trigger at event start as fallback
     if (diffMinutes <= 0) return '-PT0M';
 
     const hours = Math.floor(diffMinutes / 60);
@@ -48,13 +49,10 @@ function getAlarmTrigger(dateStr: string, startTimeStr: string): string {
     
     return `-PT${hours}H${minutes}M`;
   } catch (e) {
-    return '-PT12H'; // Fallback to 12 hours before if date parsing fails
+    return '-PT12H';
   }
 }
 
-/**
- * Generates the Vcalendar string from an array of meetings/shifts.
- */
 export function generateICSContent(meetings: Meeting[]): string {
   const events = meetings.map((m) => {
     const start = formatToICSDate(m.date, m.startTime);
@@ -71,6 +69,7 @@ export function generateICSContent(meetings: Meeting[]): string {
     if (m.emails) descriptionParts.push(`Attendees: ${m.emails}`);
     if (m.description) descriptionParts.push(`Notes: ${m.description}`);
     if (m.attachments) descriptionParts.push(`Attachments: ${m.attachments}`);
+    if (m.senderName) descriptionParts.push(`Pushed by: ${m.senderName}`);
     
     const description = descriptionParts.join('\\n');
     
@@ -94,7 +93,6 @@ export function generateICSContent(meetings: Meeting[]): string {
       `LOCATION:${m.location || ''}`,
     ];
 
-    // Add attendees if emails are provided
     if (m.emails) {
       const emailList = m.emails.split(',').map(e => e.trim());
       emailList.forEach(email => {
@@ -119,9 +117,6 @@ export function generateICSContent(meetings: Meeting[]): string {
   ].join('\r\n');
 }
 
-/**
- * Triggers a download for the generated ICS content.
- */
 export function downloadICS(content: string, filename: string = 'schedule.ics') {
   const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
   const url = URL.createObjectURL(blob);

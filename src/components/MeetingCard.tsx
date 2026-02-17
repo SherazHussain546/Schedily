@@ -23,23 +23,28 @@ import {
   Paperclip,
   Share2,
   Send,
-  UserCheck
+  UserCheck,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 
 interface MeetingCardProps {
   meeting: Meeting;
   onUpdate: (id: string, updates: Partial<Meeting>) => void;
   onRemove: (id: string) => void;
   onShare?: (meeting: Meeting, username: string) => void;
+  onAccept?: (id: string) => void;
 }
 
-export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCardProps) {
+export function MeetingCard({ meeting, onUpdate, onRemove, onShare, onAccept }: MeetingCardProps) {
   const [shareUsername, setShareUsername] = useState("");
   const isUrl = meeting.location.startsWith('http://') || meeting.location.startsWith('https://');
   const isEircode = /^[A-Z][0-9][0-9W]\s?[0-9A-Z]{4}$/i.test(meeting.location.trim());
+  const isPending = meeting.status === 'pending';
 
   const getMapUrl = (location: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
@@ -54,9 +59,18 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
 
   return (
     <Card className={cn(
-      "mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 group",
-      meeting.type === 'shift' ? "border-l-accent" : "border-l-primary"
+      "mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 group relative",
+      meeting.type === 'shift' ? "border-l-accent" : "border-l-primary",
+      isPending && "bg-amber-50/30 border-l-amber-400"
     )}>
+      {isPending && (
+        <div className="absolute top-0 right-0 p-2">
+          <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" /> New Request
+          </Badge>
+        </div>
+      )}
+
       <CardContent className="p-6">
         <div className="flex flex-col gap-6">
           <div className="flex justify-between items-center">
@@ -65,6 +79,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 value={meeting.type} 
                 onValueChange={(val) => onUpdate(meeting.id, { type: val as any })}
                 className="w-[300px]"
+                disabled={isPending}
               >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="meeting" className="flex items-center gap-2">
@@ -76,41 +91,53 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 </TabsList>
               </Tabs>
               
-              {(meeting as any).senderName && (
+              {meeting.senderName && (
                 <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
                   <UserCheck className="w-3 h-3" />
-                  From: {(meeting as any).senderName}
+                  From: {meeting.senderName}
                 </div>
               )}
             </div>
 
-            <div className="flex items-center gap-1">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-                    <Share2 className="w-5 h-5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 p-4">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm">Send to Username</h4>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="Username" 
-                        value={shareUsername}
-                        onChange={(e) => setShareUsername(e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                      <Button size="sm" className="h-8" onClick={handleShare}>
-                        <Send className="w-3 h-3" />
-                      </Button>
+            <div className="flex items-center gap-2">
+              {isPending && onAccept && (
+                <Button 
+                  size="sm" 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => onAccept(meeting.id)}
+                >
+                  <CheckCircle2 className="w-4 h-4 mr-2" /> Accept Shift
+                </Button>
+              )}
+
+              {!isPending && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title="Send to Employee">
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-4 shadow-xl border-primary/20">
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-sm text-primary flex items-center gap-2">
+                         <Send className="w-3.5 h-3.5" /> Deliver Shift
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground">Enter employee's username to push this entry to their schedule.</p>
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Employee Username" 
+                          value={shareUsername}
+                          onChange={(e) => setShareUsername(e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                        <Button size="sm" className="h-8 px-2" onClick={handleShare}>
+                          <Send className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-[10px] text-muted-foreground leading-tight">
-                      Sharing creates a copy of this entry in the recipient's schedule.
-                    </p>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </PopoverContent>
+                </Popover>
+              )}
 
               <Button
                 variant="ghost"
@@ -133,6 +160,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 value={meeting.title}
                 onChange={(e) => onUpdate(meeting.id, { title: e.target.value })}
                 className="bg-background focus:ring-primary"
+                disabled={isPending}
               />
             </div>
 
@@ -146,6 +174,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                   value={meeting.employeeName || ''}
                   onChange={(e) => onUpdate(meeting.id, { employeeName: e.target.value })}
                   className="bg-background focus:ring-accent"
+                  disabled={isPending}
                 />
               </div>
             ) : (
@@ -158,6 +187,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                   value={meeting.emails || ''}
                   onChange={(e) => onUpdate(meeting.id, { emails: e.target.value })}
                   className="bg-background focus:ring-primary"
+                  disabled={isPending}
                 />
               </div>
             )}
@@ -173,6 +203,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                   value={meeting.description || ''}
                   onChange={(e) => onUpdate(meeting.id, { description: e.target.value })}
                   className="bg-background focus:ring-primary min-h-[80px]"
+                  disabled={isPending}
                 />
               </div>
               <div className="space-y-2">
@@ -184,6 +215,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                   value={meeting.attachments || ''}
                   onChange={(e) => onUpdate(meeting.id, { attachments: e.target.value })}
                   className="bg-background focus:ring-primary min-h-[80px]"
+                  disabled={isPending}
                 />
               </div>
           </div>
@@ -198,6 +230,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 value={meeting.date}
                 onChange={(e) => onUpdate(meeting.id, { date: e.target.value })}
                 className="bg-background"
+                disabled={isPending}
               />
             </div>
             
@@ -210,6 +243,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 value={meeting.startTime}
                 onChange={(e) => onUpdate(meeting.id, { startTime: e.target.value })}
                 className="bg-background"
+                disabled={isPending}
               />
             </div>
             
@@ -222,6 +256,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 value={meeting.endTime}
                 onChange={(e) => onUpdate(meeting.id, { endTime: e.target.value })}
                 className="bg-background"
+                disabled={isPending}
               />
             </div>
           </div>
@@ -236,6 +271,7 @@ export function MeetingCard({ meeting, onUpdate, onRemove, onShare }: MeetingCar
                 value={meeting.location}
                 onChange={(e) => onUpdate(meeting.id, { location: e.target.value })}
                 className="bg-background flex-1"
+                disabled={isPending}
               />
               {meeting.location && (isUrl || isEircode) && (
                 <Button
