@@ -3,13 +3,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // PROFESSIONAL PROFILES
+    // PROFESSIONAL PROFILES & SOCIAL FEED
     match /users/{userId} {
       // Allow authenticated professionals to see profiles for discovery
       allow read: if request.auth != null;
       // Allow owners full control over their own professional profile
       allow write: if request.auth != null && request.auth.uid == userId;
       
+      // Personal Schedule & Mailbox
       match /meetings/{meetingId} {
         // Owner can do everything
         allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -17,22 +18,24 @@ service cloud.firestore {
         allow create: if request.auth != null;
       }
 
+      // Tracking who this professional follows
       match /following/{followedUserId} {
+        // Only the professional can see/manage their own following list
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 
       // Rules for tracking professional circle invitations and memberships
       match /memberships/{groupId} {
-        // Only the professional can list/remove their own memberships
-        allow read, delete: if request.auth != null && request.auth.uid == userId;
-        // Group owners can push membership info to the user
-        allow write: if request.auth != null;
+        // The professional can list their memberships and leave groups
+        allow get, list, delete: if request.auth != null && request.auth.uid == userId;
+        // Group owners/members can push membership info to the user (Invitation)
+        allow create, update: if request.auth != null;
       }
 
       // Rules for mutual professional networking (Followers)
       match /followers/{followerId} {
         // Only the profile owner can see their own follower list
-        allow read: if request.auth != null && request.auth.uid == userId;
+        allow get, list: if request.auth != null && request.auth.uid == userId;
         // Anyone authenticated can add themselves to a followers list
         allow write: if request.auth != null && request.auth.uid == followerId;
       }
@@ -48,8 +51,8 @@ service cloud.firestore {
         return get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.role == 'owner';
       }
 
-      // Allow authenticated users to see group metadata (names) for discovery/tagging
-      allow read: if request.auth != null;
+      // Allow authenticated users to list group metadata for tagging/discovery
+      allow get, list: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && isOwner();
 

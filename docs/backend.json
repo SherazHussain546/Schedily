@@ -72,11 +72,13 @@
         "joinedAt": { "type": "string", "format": "date-time" }
       }
     },
-    "Follower": {
-      "title": "Follower",
-      "description": "Tracking for users who follow a professional profile.",
+    "FollowConnection": {
+      "title": "FollowConnection",
+      "description": "Tracking for professional network connections.",
       "type": "object",
       "properties": {
+        "targetId": { "type": "string" },
+        "targetName": { "type": "string" },
         "followerId": { "type": "string" },
         "followerName": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
@@ -99,8 +101,12 @@
       "schema": { "$ref": "#/backend/entities/Membership" },
       "description": "List of groups the user is involved in."
     },
+    "/users/{userId}/following/{followedUserId}": {
+      "schema": { "$ref": "#/backend/entities/FollowConnection" },
+      "description": "People this professional is following."
+    },
     "/users/{userId}/followers/{followerId}": {
-      "schema": { "$ref": "#/backend/entities/Follower" },
+      "schema": { "$ref": "#/backend/entities/FollowConnection" },
       "description": "Network of colleagues following this user."
     },
     "/groups/{groupId}": {
