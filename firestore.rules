@@ -4,24 +4,26 @@ service cloud.firestore {
     
     // User Profile Rules
     match /users/{userId} {
-      // Any authenticated user can read profiles (for sharing/search)
+      // Profiles are readable by authenticated users so they can find people to share with
       allow read: if request.auth != null;
-      // Only the owner can write to their own profile
+      // Only the owner can manage their own profile metadata
       allow write: if request.auth != null && request.auth.uid == userId;
-    }
 
-    // Meetings and Shifts Rules
-    // Using a flat match ensures explicit collection listing permissions are granted to the owner.
-    match /users/{userId}/meetings/{meetingId} {
-      // The owner has full read (get/list) and write access to their own entries
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Peer-to-Peer Sharing:
-      // Any authenticated user can create a meeting in another user's collection 
-      // IF they provide their own UID as the senderId.
-      allow create: if request.auth != null && 
-        request.resource.data.senderId != null && 
-        request.resource.data.senderId == request.auth.uid;
+      // Meetings and Shifts Subcollection
+      // We use a recursive match or specific collection match to ensure 'list' operations work
+      match /meetings/{meetingId} {
+        
+        // 1. Ownership Rule: The owner of the schedule has full access
+        // This covers 'get' (single doc) and 'list' (the entire schedule view)
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+
+        // 2. Sharing Rule (The "Mailbox" Pattern):
+        // Allows other users to "send" a meeting to this user's schedule.
+        // They can ONLY create. They cannot read, update, or delete once sent.
+        allow create: if request.auth != null && 
+          request.resource.data.senderId != null && 
+          request.resource.data.senderId == request.auth.uid;
+      }
     }
   }
 }
