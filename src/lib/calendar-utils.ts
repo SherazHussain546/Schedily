@@ -21,6 +21,35 @@ function formatToICSDate(dateStr: string, timeStr: string): string {
 }
 
 /**
+ * Calculates the relative trigger duration for an alarm to occur the day before at 8:00 PM.
+ * Returns a string in the format -PT{H}H{M}M.
+ */
+function getShiftAlarmTrigger(dateStr: string, startTimeStr: string): string {
+  try {
+    // Construct start date object
+    const start = new Date(`${dateStr}T${startTimeStr}:00`);
+    
+    // Target is the day before at 20:00
+    const target = new Date(start);
+    target.setDate(target.getDate() - 1);
+    target.setHours(20, 0, 0, 0);
+
+    const diffMs = start.getTime() - target.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    
+    // If the diff is negative or zero, trigger at event start as fallback
+    if (diffMinutes <= 0) return '-PT0M';
+
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    
+    return `-PT${hours}H${minutes}M`;
+  } catch (e) {
+    return '-PT12H'; // Fallback to 12 hours before if date parsing fails
+  }
+}
+
+/**
  * Generates the Vcalendar string from an array of meetings/shifts.
  */
 export function generateICSContent(meetings: Meeting[]): string {
@@ -36,7 +65,19 @@ export function generateICSContent(meetings: Meeting[]): string {
 
     const description = m.type === 'shift' && m.employeeName ? `Employee: ${m.employeeName}` : '';
     
-    return [
+    let alarmBlock = '';
+    if (m.type === 'shift') {
+      const trigger = getShiftAlarmTrigger(m.date, m.startTime);
+      alarmBlock = [
+        'BEGIN:VALARM',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Shift Preparation Reminder',
+        `TRIGGER:${trigger}`,
+        'END:VALARM'
+      ].join('\r\n');
+    }
+    
+    const eventLines = [
       'BEGIN:VEVENT',
       `UID:${m.id}`,
       `DTSTAMP:${created}`,
@@ -45,8 +86,15 @@ export function generateICSContent(meetings: Meeting[]): string {
       `SUMMARY:${summary}`,
       description ? `DESCRIPTION:${description}` : '',
       `LOCATION:${m.location || ''}`,
-      'END:VEVENT'
-    ].filter(line => line !== '').join('\r\n');
+    ];
+
+    if (alarmBlock) {
+      eventLines.push(alarmBlock);
+    }
+
+    eventLines.push('END:VEVENT');
+
+    return eventLines.join('\r\n');
   });
 
   return [
