@@ -16,7 +16,7 @@
         },
         "displayName": {
           "type": "string",
-          "description": "User's unique-ish username for sharing."
+          "description": "User's unique username for identification."
         },
         "createdAt": {
           "type": "string",
@@ -37,23 +37,12 @@
     },
     "Meeting": {
       "title": "Meeting",
-      "description": "Represents a meeting or shift.",
+      "description": "Represents a meeting or shift in the schedule.",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "userId": {
           "type": "string",
-          "description": "The owner of the meeting."
-        },
-        "senderId": {
-          "type": "string",
-          "description": "UID of the user who sent this (if shared)."
-        },
-        "senderName": {
-          "type": "string",
-          "description": "Username of the sender."
+          "description": "The UID of the schedule owner."
         },
         "title": {
           "type": "string"
@@ -90,6 +79,12 @@
         "attachments": {
           "type": "string"
         },
+        "senderId": {
+          "type": "string"
+        },
+        "senderName": {
+          "type": "string"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
@@ -122,13 +117,13 @@
       "schema": {
         "$ref": "#/backend/entities/UserProfile"
       },
-      "description": "User profile data."
+      "description": "User profile document."
     },
     "/users/{userId}/meetings/{meetingId}": {
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "User meetings and retail shifts."
+      "description": "User's individual schedule entries."
     }
   }
 }
