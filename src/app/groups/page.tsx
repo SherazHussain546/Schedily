@@ -30,7 +30,7 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
 import { GroupChat } from "@/components/GroupChat";
 
@@ -205,7 +205,11 @@ export default function GroupsPage(props: {
                               <MessageSquare className="w-4 h-4 mr-2" /> Chat
                             </Button>
                           </SheetTrigger>
-                          <SheetContent side="right" className="p-0 w-full sm:max-w-md border-none">
+                          <SheetContent side="right" className="p-0 w-full sm:max-w-md border-none flex flex-col">
+                            <SheetHeader className="sr-only">
+                              <SheetTitle>{group.name} Discussion</SheetTitle>
+                              <SheetDescription>Real-time coordination and team chat for {group.name}</SheetDescription>
+                            </SheetHeader>
                             <GroupChat groupId={group.id} groupName={group.name} />
                           </SheetContent>
                         </Sheet>
