@@ -6,6 +6,12 @@
       "description": "A modern workspace with a calendar and laptop",
       "imageUrl": "https://picsum.photos/seed/productivity/1200/600",
       "imageHint": "productivity workspace"
+    },
+    {
+      "id": "calendar-sync",
+      "description": "A professional digital calendar showing synchronized events across devices",
+      "imageUrl": "https://picsum.photos/seed/calendar-sync/1200/600",
+      "imageHint": "digital calendar"
     }
   ]
 }

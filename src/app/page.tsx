@@ -353,20 +353,20 @@ export default function SchedilyDashboard(props: {
 
                 <div className="max-w-6xl mx-auto rounded-[3rem] border-8 border-white bg-slate-200 shadow-2xl overflow-hidden relative group">
                   <img 
-                    src="https://picsum.photos/seed/schedily-ui/1200/600" 
-                    alt="Schedily Hub Preview" 
+                    src="https://picsum.photos/seed/calendar-sync/1200/600" 
+                    alt="Calendar Syncing Overview" 
                     className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                    data-ai-hint="dashboard interface"
+                    data-ai-hint="digital calendar"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
                   <div className="absolute bottom-10 left-10 right-10 flex items-center justify-between">
                      <div className="flex items-center gap-4 text-white">
                         <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                           <MessageSquare className="w-7 h-7" />
+                           <CalendarDays className="w-7 h-7" />
                         </div>
                         <div className="text-left">
-                           <p className="font-black text-sm uppercase tracking-widest">Real-Time Sync</p>
-                           <p className="text-white/80 font-medium">Coordinate with your entire department instantly.</p>
+                           <p className="font-black text-sm uppercase tracking-widest">Universal Sync</p>
+                           <p className="text-white/80 font-medium">Your entire schedule, unified across all your professional devices.</p>
                         </div>
                      </div>
                   </div>
