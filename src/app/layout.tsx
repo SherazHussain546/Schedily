@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Schedily | Professional Social Coordination by SYNC TECH Solutions",
-  description: "The future of team synchronization. Schedily allows professionals to tag teammates, dispatch retail shifts, and coordinate schedules effortlessly. Developed by Sheraz Hussain at SYNC TECH Solutions.",
+  description: "The future of team synchronization. Schedily allows professionals to tag teammates, dispatch retail shifts, and coordinate schedules effortlessly. Engineered for performance by SYNC TECH Solutions in Dublin.",
   keywords: [
     "Professional Scheduling", 
     "Social Coordination", 
@@ -21,9 +21,11 @@ export const metadata: Metadata = {
     "ICS Calendar Generator", 
     "SYNC TECH Solutions", 
     "Sheraz Hussain",
+    "Dublin Tech Ops",
     "Professional Networking",
     "Shift Sync",
-    "Business Coordination Tool"
+    "Business Coordination Tool",
+    "Enterprise Scheduling Engine"
   ],
   authors: [{ name: "Sheraz Hussain", url: "https://sheraz.synctech.ie" }],
   creator: "SYNC TECH Solutions",
@@ -48,7 +50,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Schedily | Professional Social Coordination",
-    description: "The future of team synchronization. Developed by Sheraz Hussain.",
+    description: "The future of team synchronization. Developed by Sheraz Hussain at SYNC TECH Solutions.",
     images: ["https://picsum.photos/seed/schedily-tw/1200/630"],
   },
 };

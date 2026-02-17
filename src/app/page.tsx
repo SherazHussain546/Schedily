@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, use } from "react";
@@ -27,7 +26,8 @@ import {
   MailWarning,
   CheckCircle2,
   Globe,
-  BellRing
+  BellRing,
+  HelpCircle
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -48,7 +48,6 @@ import { useRouter } from "next/navigation";
 import { generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { triggerNotification } from "@/app/actions/notifications";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 
 export default function SchedilyDashboard(props: {
   params: Promise<any>;
@@ -266,6 +265,10 @@ export default function SchedilyDashboard(props: {
               Schedily
             </h1>
           </Link>
+          <nav className="hidden lg:flex items-center gap-8 ml-8">
+            <Link href="/about" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">About</Link>
+            <Link href="/how-it-works" className="text-sm font-bold text-slate-500 hover:text-primary transition-colors">Guide</Link>
+          </nav>
           <div className="flex items-center gap-3">
             {user ? (
               <>
@@ -313,14 +316,14 @@ export default function SchedilyDashboard(props: {
         {!user ? (
           <div className="flex flex-col">
             {/* Hero Section */}
-            <section className="relative pt-24 pb-32 overflow-hidden">
+            <section className="relative pt-24 pb-32 overflow-hidden bg-white">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-accent/5 rounded-full blur-[150px]" />
               </div>
 
               <div className="container mx-auto px-4 text-center">
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-slate-200 shadow-sm text-primary font-black text-[10px] uppercase tracking-[0.2em] mb-12 animate-in fade-in slide-in-from-bottom-4">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-50 border border-slate-200 shadow-sm text-primary font-black text-[10px] uppercase tracking-[0.2em] mb-12">
                   <Zap className="w-4 h-4 fill-current" /> Engineered by SYNC TECH Solutions
                 </div>
                 
@@ -339,24 +342,18 @@ export default function SchedilyDashboard(props: {
                        Join the Network
                     </Button>
                   </Link>
-                  <div className="flex -space-x-3">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-slate-100 overflow-hidden ring-2 ring-slate-50">
-                        <img src={`https://picsum.photos/seed/${i+40}/100/100`} alt="User" />
-                      </div>
-                    ))}
-                    <div className="w-12 h-12 rounded-full border-4 border-white bg-primary flex items-center justify-center text-white text-xs font-black shadow-lg">
-                      +1k
-                    </div>
-                  </div>
+                  <Link href="/how-it-works">
+                    <Button variant="outline" size="lg" className="px-10 py-8 h-auto text-xl rounded-2xl border-2 font-black hover:bg-slate-50 transition-all">
+                       See How It Works
+                    </Button>
+                  </Link>
                 </div>
 
                 <div className="max-w-6xl mx-auto rounded-[3rem] border-8 border-white bg-slate-200 shadow-2xl overflow-hidden relative group">
                   <img 
                     src="https://picsum.photos/seed/calendar-sync/1200/600" 
-                    alt="Calendar Syncing Overview" 
+                    alt="Universal Calendar Syncing Overview" 
                     className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                    data-ai-hint="digital calendar"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent pointer-events-none" />
                   <div className="absolute bottom-10 left-10 right-10 flex items-center justify-between">
@@ -459,9 +456,9 @@ export default function SchedilyDashboard(props: {
                         <p className="text-primary-foreground/70 text-lg font-medium">
                            Schedily is a premium coordination engine engineered for enterprise-grade performance and team synchronization.
                         </p>
-                        <Link href="/login" className="inline-block pt-4">
+                        <Link href="/about" className="inline-block pt-4">
                            <Button variant="secondary" size="lg" className="rounded-xl px-10 h-14 font-black">
-                              Learn More at synctech.ie
+                              Learn More About Schedily
                            </Button>
                         </Link>
                      </div>
@@ -487,17 +484,54 @@ export default function SchedilyDashboard(props: {
                   <h3 className="text-5xl md:text-7xl font-black font-headline text-slate-900 mb-10 tracking-tighter">
                      Ready to <span className="text-primary">Sync</span> Your Team?
                   </h3>
-                  <Link href="/login">
-                    <Button size="lg" className="px-16 py-8 h-auto text-2xl rounded-2xl shadow-2xl shadow-primary/30 font-black bg-primary hover:bg-primary/90 transition-all active:scale-95">
-                       Get Schedily Now
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                    <Link href="/login">
+                      <Button size="lg" className="px-16 py-8 h-auto text-2xl rounded-2xl shadow-2xl shadow-primary/30 font-black bg-primary hover:bg-primary/90 transition-all active:scale-95">
+                         Get Started Now
+                      </Button>
+                    </Link>
+                  </div>
                   <p className="mt-8 text-slate-400 font-bold text-sm">Free for professional teams under 10 members.</p>
                </div>
             </section>
 
-            <footer className="py-12 border-t text-center text-slate-400 text-sm font-bold uppercase tracking-widest">
-               © {year} SYNC TECH Solutions. All rights reserved.
+            <footer className="py-20 bg-slate-900 text-white border-t">
+              <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+                  <div className="space-y-6">
+                    <Link href="/" className="flex items-center gap-2">
+                      <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                        <Sparkles className="text-white w-6 h-6" />
+                      </div>
+                      <h1 className="text-xl font-black font-headline tracking-tighter">
+                        Schedily
+                      </h1>
+                    </Link>
+                    <p className="text-slate-400 font-medium leading-relaxed">
+                      Professional social coordination engine engineered for modern team performance.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <h5 className="font-black uppercase tracking-widest text-xs text-slate-500">Navigation</h5>
+                    <ul className="space-y-2">
+                      <li><Link href="/about" className="text-slate-300 hover:text-primary transition-colors font-bold">About Schedily</Link></li>
+                      <li><Link href="/how-it-works" className="text-slate-300 hover:text-primary transition-colors font-bold">How It Works</Link></li>
+                      <li><Link href="/login" className="text-slate-300 hover:text-primary transition-colors font-bold">Professional Login</Link></li>
+                    </ul>
+                  </div>
+                  <div className="space-y-4">
+                    <h5 className="font-black uppercase tracking-widest text-xs text-slate-500">Legal & Support</h5>
+                    <ul className="space-y-2">
+                      <li><Link href="#" className="text-slate-300 hover:text-primary transition-colors font-bold">Privacy Policy</Link></li>
+                      <li><Link href="#" className="text-slate-300 hover:text-primary transition-colors font-bold">Terms of Service</Link></li>
+                      <li><Link href="#" className="text-slate-300 hover:text-primary transition-colors font-bold">Support Hub</Link></li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="pt-12 border-t border-slate-800 text-center text-slate-500 text-sm font-bold uppercase tracking-widest">
+                  © {year} SYNC TECH Solutions. Engineered in Dublin, Ireland.
+                </div>
+              </div>
             </footer>
           </div>
         ) : (
