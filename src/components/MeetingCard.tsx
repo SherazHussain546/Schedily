@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Meeting } from "@/lib/calendar-utils";
+import { Meeting, generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,8 @@ import {
   AlertCircle,
   Search,
   Loader2,
-  UserPlus
+  UserPlus,
+  Download
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -92,6 +93,13 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onAccept
     setTagSearch("");
   };
 
+  const handleIndividualDownload = () => {
+    const content = generateICSContent([meeting]);
+    const filename = `${meeting.title || (meeting.type === 'shift' ? 'Shift' : 'Meeting')}-${meeting.date}.ics`;
+    downloadICS(content, filename);
+    toast({ title: "Calendar Event Generated" });
+  };
+
   return (
     <Card className={cn(
       "mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 group relative",
@@ -148,8 +156,19 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onAccept
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={handleIndividualDownload}
+                className="text-muted-foreground hover:text-primary"
+                title="Download ICS"
+              >
+                <Download className="w-5 h-5" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => onRemove(meeting.id)}
                 className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Delete Entry"
               >
                 <Trash2 className="w-5 h-5" />
               </Button>
@@ -172,8 +191,8 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onAccept
 
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                {meeting.type === 'shift' ? <User className="w-4 h-4" /> : <Users className="w-4 h-4" />}
-                {meeting.type === 'shift' ? 'Tag Teammate (Deliver Shift)' : 'Attendees (Tag list)'}
+                {meeting.type === 'shift' ? <Send className="w-4 h-4" /> : <Users className="w-4 h-4" />}
+                {meeting.type === 'shift' ? 'Dispatch Shift to Teammate' : 'Tag Attendees'}
               </Label>
               
               <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
@@ -189,7 +208,7 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onAccept
                       </span>
                     ) : (
                       <span className="text-muted-foreground flex items-center gap-2">
-                        <Search className="w-4 h-4" /> Tag a colleague...
+                        <Search className="w-4 h-4" /> Send to colleague...
                       </span>
                     )}
                   </Button>
@@ -224,7 +243,7 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onAccept
                       ))
                     ) : (
                       <div className="p-4 text-center text-xs text-muted-foreground">
-                        {tagSearch ? "No professionals found" : "Search to tag a colleague"}
+                        {tagSearch ? "No professionals found" : "Search to dispatch task"}
                       </div>
                     )}
                   </div>
