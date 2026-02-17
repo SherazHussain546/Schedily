@@ -9,18 +9,16 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
       
-      // THE SOCIAL MAILBOX (MEETINGS & SHIFTS)
-      // We explicitly split list/get to ensure queries are authorized correctly.
-      match /meetings/{meetingId} {
-        // Owner has full access to their feed.
-        allow list, get, update, delete: if request.auth != null && request.auth.uid == userId;
-        // Anyone can "Push" a shift/meeting to this user's mailbox.
-        allow create: if request.auth != null;
+      // RECURSIVE OWNERSHIP (THE MASTER KEY)
+      // This grants the owner total authority to list and manage anything in their folder.
+      match /{allPaths=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 
-      // CONNECTIONS (FOLLOWING)
-      match /following/{followedUserId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      // SOCIAL MAILBOX (DROP-OFF SLOT)
+      // Allows anyone in the network to "Push" a shift/meeting to this user.
+      match /meetings/{meetingId} {
+        allow create: if request.auth != null;
       }
     }
   }

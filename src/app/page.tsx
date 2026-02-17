@@ -185,7 +185,7 @@ export default function SchedilyDashboard() {
         updatedAt: serverTimestamp(),
       });
 
-      toast({ title: "Task Pushed", description: `Sent to @${targetUsername}'s mailbox.` });
+      toast({ title: "Shift Tagged!", description: `Sent to @${targetUsername}'s mailbox.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Dispatch Failed" });
     }
@@ -310,6 +310,7 @@ export default function SchedilyDashboard() {
                   <MeetingCard
                     key={meeting.id}
                     meeting={meeting}
+                    db={db}
                     onUpdate={updateMeeting}
                     onRemove={removeMeeting}
                     onShare={shareWithUser}
@@ -374,4 +375,3 @@ export default function SchedilyDashboard() {
     </div>
   );
 }
-
