@@ -2,24 +2,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. OWNER ACCESS
-    // Grant full recursive access to the owner of a user folder.
-    // Using {document=**} ensures that 'list' queries on sub-collections like 'meetings' 
-    // are automatically authorized for the owner.
+    // 1. PUBLIC DIRECTORY (SEARCH)
+    // Allows managers to find employees by username/displayName to get their UID.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 2. RECURSIVE OWNER ACCESS (THE FIX)
+    // This recursive wildcard match is critical for authorizing collection listing.
+    // If the path starts with the user's ID, they have the "Master Key" to list all meetings.
     match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 2. PUBLIC PROFILES
-    // Allows any authenticated user to search the directory (e.g. by username) 
-    // to find colleagues and deliver shifts.
-    match /users/{userId} {
-      allow read: if request.auth != null;
-    }
-
-    // 3. DELIVERY SLOT
-    // Allows managers to "push" a new entry to an employee's schedule.
-    // They can drop it off (create), but they cannot see the employee's existing schedule.
+    // 3. DELIVERY SLOT (PUSH MODEL)
+    // Allows non-owners (Managers) to "push" or "drop off" a meeting/shift 
+    // into an employee's schedule. They cannot see existing items or change them.
     match /users/{userId}/meetings/{meetingId} {
       allow create: if request.auth != null;
     }
