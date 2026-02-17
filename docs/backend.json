@@ -103,6 +103,30 @@
         "createdAt"
       ]
     },
+    "Group": {
+      "title": "Group",
+      "description": "A professional team or department group.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name",
+        "ownerId"
+      ]
+    },
     "Connection": {
       "title": "Connection",
       "description": "A professional following relationship.",
@@ -148,6 +172,29 @@
         "$ref": "#/backend/entities/Connection"
       },
       "description": "List of colleagues followed for coordination."
+    },
+    "/groups/{groupId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Group"
+      },
+      "description": "Team group metadata."
+    },
+    "/groups/{groupId}/members/{userId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string" },
+          "displayName": { "type": "string" },
+          "role": { "type": "string", "enum": ["owner", "member"] }
+        }
+      },
+      "description": "Group membership list."
+    },
+    "/groups/{groupId}/meetings/{meetingId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Meeting"
+      },
+      "description": "Shared group schedule."
     }
   }
 }

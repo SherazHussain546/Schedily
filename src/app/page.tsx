@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, use } from "react";
@@ -199,6 +200,28 @@ export default function SchedilyDashboard(props: {
     }
   };
 
+  const shareWithGroup = async (meeting: Meeting, groupId: string, groupName: string) => {
+    if (!db || !user || !groupId) return;
+
+    try {
+      const groupMeetingRef = collection(db, "groups", groupId, "meetings");
+      const { id, ...dataToShare } = meeting;
+      
+      addDocumentNonBlocking(groupMeetingRef, {
+        ...dataToShare,
+        status: 'accepted',
+        senderId: user.uid,
+        senderName: user.displayName || "Teammate",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      toast({ title: "Group Broadcast!", description: `Shared with ${groupName}.` });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Group Dispatch Failed" });
+    }
+  };
+
   if (isUserLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -222,10 +245,16 @@ export default function SchedilyDashboard(props: {
           <div className="flex items-center gap-2">
             {user ? (
               <>
+                <Link href="/groups">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary font-bold">
+                    <Users className="w-4 h-4 mr-2" />
+                    <span className="hidden md:inline">Groups</span>
+                  </Button>
+                </Link>
                 <Link href="/network">
                   <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary font-medium">
-                    <Users className="w-4 h-4 mr-2" />
-                    <span className="hidden md:inline">My Network</span>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    <span className="hidden md:inline">Network</span>
                   </Button>
                 </Link>
                 <Link href="/profile">
@@ -254,21 +283,20 @@ export default function SchedilyDashboard(props: {
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         {!user ? (
           <div className="flex flex-col items-center justify-center min-h-[80vh] py-20 relative overflow-hidden">
-            {/* Decorative background elements */}
             <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/5 rounded-full blur-[100px]" />
             <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-accent/5 rounded-full blur-[100px]" />
             
             <div className="relative z-10 flex flex-col items-center text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest mb-8">
                 <Zap className="w-3 h-3 fill-current" /> Powered by SYNC TECH Solutions
               </div>
               
               <h2 className="text-5xl md:text-7xl font-black font-headline text-slate-900 mb-8 leading-[1.05] tracking-tight text-balance">
-                Professional Social <span className="text-primary italic">Coordination</span>.
+                Team Social <span className="text-primary italic">Coordination</span>.
               </h2>
               
               <p className="text-slate-600 text-xl md:text-2xl max-w-3xl mb-12 leading-relaxed font-medium">
-                The ultimate coordination hub for businesses. Manage <span className="text-slate-900 font-bold">Retail Shift Management</span>, synchronize team schedules, and tag colleagues in high-performance environments.
+                The ultimate collaboration hub for businesses. Create <span className="text-slate-900 font-bold">Team Groups</span>, synchronize shared schedules, and tag colleagues instantly.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-6 mb-20">
@@ -277,9 +305,6 @@ export default function SchedilyDashboard(props: {
                      Join the Network
                   </Button>
                 </Link>
-                <Button variant="ghost" size="lg" className="px-10 py-8 h-auto text-xl rounded-2xl font-bold text-slate-600 hover:text-primary transition-all">
-                  How it Works <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
@@ -287,9 +312,9 @@ export default function SchedilyDashboard(props: {
                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
                     <Users className="w-6 h-6 text-primary" />
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">Tag & Dispatch</h4>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Group Synergy</h4>
                   <p className="text-slate-500 text-sm leading-relaxed">
-                    Socially push tasks directly into a teammate's schedule with our innovative tagging ecosystem.
+                    Form professional groups for your department and synchronize collective schedules in real-time.
                   </p>
                 </div>
                 
@@ -297,9 +322,9 @@ export default function SchedilyDashboard(props: {
                   <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center mb-6">
                     <Download className="w-6 h-6 text-accent" />
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">Smart ICS Engine</h4>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Smart Sync</h4>
                   <p className="text-slate-500 text-sm leading-relaxed">
-                    Generate professional Vcalendar files with built-in preparation alarms for Apple and Google calendars.
+                    One-click ICS generation for any shared shift, ensuring your team is always on the same page.
                   </p>
                 </div>
 
@@ -307,25 +332,10 @@ export default function SchedilyDashboard(props: {
                   <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
                     <ShieldCheck className="w-6 h-6 text-emerald-600" />
                   </div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-3">Privacy First</h4>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Professional Privacy</h4>
                   <p className="text-slate-500 text-sm leading-relaxed">
-                    Advanced Firestore Security Rules protect personal schedules while enabling seamless team coordination.
+                    Role-based group access ensures sensitive coordination data stays within your authorized team.
                   </p>
-                </div>
-              </div>
-
-              <div className="mt-24 pt-12 border-t border-slate-200 w-full flex flex-col items-center">
-                <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-4">Developed by</p>
-                <div className="flex items-center gap-6">
-                  <div className="text-center">
-                    <p className="text-slate-900 font-black text-lg">Sheraz Hussain</p>
-                    <p className="text-primary font-bold text-xs">Lead Developer</p>
-                  </div>
-                  <div className="w-px h-10 bg-slate-200" />
-                  <div className="text-center">
-                    <p className="text-slate-900 font-black text-lg">SYNC TECH Solutions</p>
-                    <p className="text-accent font-bold text-xs">Innovation Partner</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -335,9 +345,9 @@ export default function SchedilyDashboard(props: {
             <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-widest">
-                  <TrendingUp className="w-4 h-4" /> My Professional Hub
+                  <TrendingUp className="w-4 h-4" /> Team Coordination
                 </div>
-                <h2 className="text-4xl font-black font-headline text-slate-900 tracking-tight">Social Coordination</h2>
+                <h2 className="text-4xl font-black font-headline text-slate-900 tracking-tight">Social Groups</h2>
               </div>
               <div className="flex gap-4">
                 <Button onClick={() => addItem('meeting')} variant="outline" className="h-14 px-8 rounded-2xl border-slate-200 bg-white font-bold hover:border-primary/50 transition-all shadow-sm">
@@ -355,7 +365,7 @@ export default function SchedilyDashboard(props: {
                   <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
                     <Info className="w-5 h-5 text-primary/70" />
                   </div>
-                  <span>Clear {expiredMeetings.length} historical tasks.</span>
+                  <span>Archive {expiredMeetings.length} historical tasks.</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-primary hover:bg-primary/5 rounded-full font-black px-6">
                   Archive
@@ -367,7 +377,7 @@ export default function SchedilyDashboard(props: {
               {isMeetingsLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 gap-4">
                   <Loader2 className="w-12 h-12 animate-spin text-primary/40" />
-                  <p className="text-slate-400 font-bold">Syncing Network...</p>
+                  <p className="text-slate-400 font-bold">Syncing Team Hub...</p>
                 </div>
               ) : currentMeetings.length > 0 ? (
                 currentMeetings.map((meeting) => (
@@ -378,6 +388,7 @@ export default function SchedilyDashboard(props: {
                     onUpdate={updateMeeting}
                     onRemove={removeMeeting}
                     onShare={shareWithUser}
+                    onShareGroup={shareWithGroup}
                     onAccept={acceptMeeting}
                   />
                 ))
@@ -386,52 +397,20 @@ export default function SchedilyDashboard(props: {
                   <div className="w-24 h-24 bg-white rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-8 border border-slate-100">
                     <CalendarPlus className="w-12 h-12 text-slate-300" />
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900 mb-4">Your Feed is Empty</h3>
+                  <h3 className="text-3xl font-black text-slate-900 mb-4">Start Your Team Schedule</h3>
                   <p className="text-slate-500 mt-2 max-w-sm mx-auto text-lg">
-                    Build your professional network to start coordinating tasks.
+                    Build professional groups to synchronize shifts and meetings.
                   </p>
-                  <div className="mt-10">
-                    <Link href="/network">
+                  <div className="mt-10 flex gap-4 justify-center">
+                    <Link href="/groups">
                       <Button size="lg" className="rounded-2xl font-black h-14 px-10">
-                        <UserPlus className="w-5 h-5 mr-2" /> Find Colleagues
+                        <Users className="w-5 h-5 mr-2" /> Create Group
                       </Button>
                     </Link>
                   </div>
                 </div>
               )}
             </div>
-
-            {followingList && followingList.length > 0 && (
-              <div className="mt-24 p-10 bg-white border border-slate-100 rounded-[48px] shadow-2xl shadow-slate-200/40">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl font-black font-headline text-slate-900 flex items-center gap-3">
-                    <Users className="w-6 h-6 text-primary" />
-                    Professional Circle
-                  </h3>
-                  <Link href="/network">
-                    <Button variant="ghost" className="text-primary font-bold hover:bg-primary/5 rounded-full">
-                      Network Hub <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  {followingList.map((f: any) => (
-                    <div key={f.id} className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] text-primary font-black">
-                        {f.targetName?.substring(0, 1).toUpperCase()}
-                      </div>
-                      @{f.targetName}
-                    </div>
-                  ))}
-                  <Link href="/network">
-                    <Button variant="ghost" className="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-200 text-slate-300 hover:border-primary hover:text-primary bg-slate-50/50">
-                      <Search className="w-5 h-5" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
           </>
         )}
       </main>
