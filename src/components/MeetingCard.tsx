@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -7,7 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Trash2, Calendar, Clock, MapPin, Type } from "lucide-react";
+import { Trash2, Calendar, Clock, MapPin, Type, User, ExternalLink, Briefcase, Video } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 interface MeetingCardProps {
   meeting: Meeting;
@@ -16,23 +17,72 @@ interface MeetingCardProps {
 }
 
 export function MeetingCard({ meeting, onUpdate, onRemove }: MeetingCardProps) {
+  const isUrl = meeting.location.startsWith('http://') || meeting.location.startsWith('https://');
+  const isEircode = /^[A-Z][0-9][0-9W]\s?[0-9A-Z]{4}$/i.test(meeting.location.trim());
+
+  const getMapUrl = (location: string) => {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+  };
+
   return (
-    <Card className="mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 border-l-primary group">
+    <Card className={cn(
+      "mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 group",
+      meeting.type === 'shift' ? "border-l-accent" : "border-l-primary"
+    )}>
       <CardContent className="p-6">
-        <div className="flex justify-between items-start gap-4 mb-4">
-          <div className="flex-1 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-6">
+          <div className="flex justify-between items-center">
+            <Tabs 
+              value={meeting.type} 
+              onValueChange={(val) => onUpdate(meeting.id, { type: val as any })}
+              className="w-[300px]"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="meeting" className="flex items-center gap-2">
+                  <Video className="w-3.5 h-3.5" /> Meeting
+                </TabsTrigger>
+                <TabsTrigger value="shift" className="flex items-center gap-2">
+                  <Briefcase className="w-3.5 h-3.5" /> Retail Shift
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(meeting.id)}
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                <Type className="w-4 h-4" /> {meeting.type === 'shift' ? 'Shift Title' : 'Meeting Title'}
+              </Label>
+              <Input
+                placeholder={meeting.type === 'shift' ? "e.g. Morning Shift" : "e.g. Project Sync"}
+                value={meeting.title}
+                onChange={(e) => onUpdate(meeting.id, { title: e.target.value })}
+                className="bg-background focus:ring-primary"
+              />
+            </div>
+
+            {meeting.type === 'shift' ? (
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                  <Type className="w-4 h-4" /> Meeting Title
+                  <User className="w-4 h-4" /> Employee Name
                 </Label>
                 <Input
-                  placeholder="e.g. Weekly Sync"
-                  value={meeting.title}
-                  onChange={(e) => onUpdate(meeting.id, { title: e.target.value })}
-                  className="bg-background focus:ring-primary"
+                  placeholder="e.g. John Doe"
+                  value={meeting.employeeName || ''}
+                  onChange={(e) => onUpdate(meeting.id, { employeeName: e.target.value })}
+                  className="bg-background focus:ring-accent"
                 />
               </div>
+            ) : (
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-muted-foreground font-medium">
                   <Calendar className="w-4 h-4" /> Date
@@ -44,53 +94,72 @@ export function MeetingCard({ meeting, onUpdate, onRemove }: MeetingCardProps) {
                   className="bg-background focus:ring-primary"
                 />
               </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+             {meeting.type === 'shift' && (
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                    <Calendar className="w-4 h-4" /> Date
+                  </Label>
+                  <Input
+                    type="date"
+                    value={meeting.date}
+                    onChange={(e) => onUpdate(meeting.id, { date: e.target.value })}
+                    className="bg-background focus:ring-accent"
+                  />
+                </div>
+             )}
+            
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                <Clock className="w-4 h-4" /> Start Time
+              </Label>
+              <Input
+                type="time"
+                value={meeting.startTime}
+                onChange={(e) => onUpdate(meeting.id, { startTime: e.target.value })}
+                className="bg-background"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                <Clock className="w-4 h-4" /> End Time
+              </Label>
+              <Input
+                type="time"
+                value={meeting.endTime}
+                onChange={(e) => onUpdate(meeting.id, { endTime: e.target.value })}
+                className="bg-background"
+              />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                  <Clock className="w-4 h-4" /> Start Time
-                </Label>
+            <div className={cn("space-y-2", meeting.type === 'meeting' ? "md:col-span-1" : "md:col-span-3")}>
+              <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                <MapPin className="w-4 h-4" /> Location / Eircode / URL
+              </Label>
+              <div className="flex gap-2">
                 <Input
-                  type="time"
-                  value={meeting.startTime}
-                  onChange={(e) => onUpdate(meeting.id, { startTime: e.target.value })}
-                  className="bg-background focus:ring-primary"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                  <Clock className="w-4 h-4" /> End Time
-                </Label>
-                <Input
-                  type="time"
-                  value={meeting.endTime}
-                  onChange={(e) => onUpdate(meeting.id, { endTime: e.target.value })}
-                  className="bg-background focus:ring-primary"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                  <MapPin className="w-4 h-4" /> Location (Optional)
-                </Label>
-                <Input
-                  placeholder="e.g. Conference Room A"
+                  placeholder="e.g. D02 X285 or https://zoom.us/..."
                   value={meeting.location}
                   onChange={(e) => onUpdate(meeting.id, { location: e.target.value })}
-                  className="bg-background focus:ring-primary"
+                  className="bg-background flex-1"
                 />
+                {meeting.location && (isUrl || isEircode) && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => window.open(isUrl ? meeting.location : getMapUrl(meeting.location), '_blank')}
+                    title={isUrl ? "Open Link" : "Open Maps"}
+                  >
+                    <ExternalLink className="w-4 h-4 text-primary" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onRemove(meeting.id)}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-          >
-            <Trash2 className="w-5 h-5" />
-          </Button>
         </div>
       </CardContent>
     </Card>

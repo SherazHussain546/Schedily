@@ -1,7 +1,10 @@
+export type ItemType = 'meeting' | 'shift';
 
 export interface Meeting {
   id: string;
   title: string;
+  type: ItemType;
+  employeeName?: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -12,15 +15,13 @@ export interface Meeting {
  * Formats a date and time into YYYYMMDDTHHMMSS format.
  */
 function formatToICSDate(dateStr: string, timeStr: string): string {
-  // dateStr is typically YYYY-MM-DD
-  // timeStr is typically HH:MM
   const date = dateStr.replace(/-/g, '');
   const time = timeStr.replace(/:/g, '') + '00';
   return `${date}T${time}`;
 }
 
 /**
- * Generates the Vcalendar string from an array of meetings.
+ * Generates the Vcalendar string from an array of meetings/shifts.
  */
 export function generateICSContent(meetings: Meeting[]): string {
   const events = meetings.map((m) => {
@@ -28,16 +29,24 @@ export function generateICSContent(meetings: Meeting[]): string {
     const end = formatToICSDate(m.date, m.endTime);
     const created = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     
+    let summary = m.title || (m.type === 'shift' ? 'Retail Shift' : 'Untitled Meeting');
+    if (m.type === 'shift' && m.employeeName) {
+      summary = `${m.employeeName} - ${summary}`;
+    }
+
+    const description = m.type === 'shift' && m.employeeName ? `Employee: ${m.employeeName}` : '';
+    
     return [
       'BEGIN:VEVENT',
       `UID:${m.id}`,
       `DTSTAMP:${created}`,
       `DTSTART:${start}`,
       `DTEND:${end}`,
-      `SUMMARY:${m.title || 'Untitled Meeting'}`,
+      `SUMMARY:${summary}`,
+      description ? `DESCRIPTION:${description}` : '',
       `LOCATION:${m.location || ''}`,
       'END:VEVENT'
-    ].join('\r\n');
+    ].filter(line => line !== '').join('\r\n');
   });
 
   return [
