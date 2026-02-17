@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * FIRESTORE SECURITY RULES - PROTOTYPING MODE
+     *
+     * CORE PHILOSOPHY:
+     * This ruleset enforces a strict user-ownership model. Every document is associated 
+     * with a specific user via the document path and internal relational fields.
+     *
+     * DATA STRUCTURE:
+     * The database is organized hierarchically:
+     * - /users/{userId} : Root profile documents for each user.
+     * - /users/{userId}/meetings/{meetingId} : Meetings owned by the specific user.
+     *
+     * KEY SECURITY DECISIONS:
+     * 1. Path-Based Ownership: Authorization is primarily determined by comparing the
+     *    authenticated user's UID to the {userId} wildcard in the document path.
+     * 2. Relational Integrity: On creation, documents must include a field (like 'id' 
+     *    or 'userId') that matches the path UID. This ensures data consistency.
+     * 3. Immutability: Ownership fields are made immutable during updates to prevent
+     *    users from "transferring" documents to other accounts.
+     * 4. Prototyping Flexibility: Rules do not enforce data types (strings, dates, etc.)
+     *    to allow for rapid iteration, focusing strictly on "who" can access "what."
+     *
+     * DENORMALIZATION FOR AUTHORIZATION:
+     * To ensure high performance and avoid costly get() calls, the 'userId' is 
+     * denormalized directly onto Meeting documents. This allows rules to verify 
+     * ownership locally within the document scope.
+     */
+
+    // --- Global Helper Functions ---
+
+    /** @description Checks if the request is made by an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Checks if the document exists and the current user is the owner. */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for the UserProfile collection. Restricts access to the owner only.
+     * @path /users/{userId}
+     * @allow (create) if the auth UID matches {userId} and the 'id' field matches.
+     * @deny (get) if the auth UID does not match the requested document ID.
+     * @principle Enforces self-creation and strict ownership of user profile data.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Rules for the Meeting subcollection. Each meeting is owned by a specific user.
+       * @path /users/{userId}/meetings/{meetingId}
+       * @allow (list) if the user is fetching their own subcollection of meetings.
+       * @deny (update) if the user attempts to change the 'userId' field of an existing meeting.
+       * @principle Path-based authorization with denormalized ownership field validation.
+       */
+      match /meetings/{meetingId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    // Default deny for any paths not explicitly matched.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
