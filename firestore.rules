@@ -3,25 +3,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. PUBLIC DIRECTORY
-    // Allows any logged-in user to find a colleague by username to deliver shifts.
+    // 1. PUBLIC PROFILES
+    // Allows any authenticated user to search for colleagues by username to deliver shifts.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
-    }
 
-    // 2. RECURSIVE OWNERSHIP (The Master Key)
-    // This allows the owner to perform any operation (including LIST/queries) 
-    // on any sub-collection within their own user folder.
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
+      // 2. MEETINGS SUB-COLLECTION (The Schedule)
+      // We explicitly match the meeting documents to allow collection-wide LIST queries for the owner.
+      match /meetings/{meetingId} {
+        // OWNER ACCESS: The master key for their own schedule.
+        // In Rules v2, 'read' on a document pattern automatically allows 'list' on the collection.
+        allow read, write: if request.auth != null && request.auth.uid == userId;
 
-    // 3. THE DELIVERY SLOT (The Mailbox)
-    // This allows Managers to "drop off" new meetings in an employee's folder.
-    // They cannot read existing items or list the folder.
-    match /users/{userId}/meetings/{meetingId} {
-      allow create: if request.auth != null;
+        // DELIVERY SLOT: Allows external managers to "push" a new entry.
+        // They can drop it off (create), but they can't read the list or existing docs.
+        allow create: if request.auth != null;
+      }
     }
   }
 }
