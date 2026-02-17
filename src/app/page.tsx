@@ -167,6 +167,9 @@ export default function MeetingMaestro() {
 
         <div className="mt-20 pt-10 border-t text-center text-sm text-muted-foreground">
           <p>© {year} Meeting Maestro. Irish Eircode and Virtual Link ready.</p>
+          <p className="mt-2">
+            Built by <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">SYNC TECH Solutions</a>
+          </p>
         </div>
       </main>
 
