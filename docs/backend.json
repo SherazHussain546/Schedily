@@ -134,19 +134,19 @@
       "schema": {
         "$ref": "#/backend/entities/UserProfile"
       },
-      "description": "User profile."
+      "description": "User profile document."
     },
     "/users/{userId}/meetings/{meetingId}": {
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "Schedule entries."
+      "description": "Personal and received schedule entries."
     },
     "/users/{userId}/following/{followedUserId}": {
       "schema": {
         "$ref": "#/backend/entities/Connection"
       },
-      "description": "Users this user is following."
+      "description": "User networking connections."
     }
   }
 }
