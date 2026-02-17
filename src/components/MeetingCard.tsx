@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Meeting, generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { collection, query, where, getDocs, Firestore } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface MeetingCardProps {
   meeting: Meeting;
@@ -52,7 +53,6 @@ interface MeetingCardProps {
 export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareGroup, onAccept }: MeetingCardProps) {
   const [tagSearch, setTagSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [groupResults, setGroupResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -60,42 +60,51 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
   const isEircode = /^[A-Z][0-9][0-9W]\s?[0-9A-Z]{4}$/i.test(meeting.location.trim());
   const isPending = meeting.status === 'pending';
 
+  // Social-style live search logic
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!tagSearch.trim() || !db) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        // Search Users by display name prefix
+        const usersRef = collection(db, "users");
+        const uq = query(
+          usersRef, 
+          where("displayName", ">=", tagSearch),
+          where("displayName", "<=", tagSearch + '\uf8ff')
+        );
+        const uSnap = await getDocs(uq);
+        const uRes = uSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'user' }));
+
+        // Search Groups by name prefix
+        const groupsRef = collection(db, "groups");
+        const gq = query(
+          groupsRef,
+          where("name", ">=", tagSearch),
+          where("name", "<=", tagSearch + '\uf8ff')
+        );
+        const gSnap = await getDocs(gq);
+        const gRes = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'group' }));
+
+        // Combine and limit results for the suggestion list
+        setSearchResults([...uRes, ...gRes].slice(0, 6));
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timer = setTimeout(performSearch, 300); // 300ms debounce
+    return () => clearTimeout(timer);
+  }, [tagSearch, db]);
+
   const getMapUrl = (location: string) => {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
-  };
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tagSearch.trim() || !db) return;
-
-    setIsSearching(true);
-    try {
-      // Search Users
-      const usersRef = collection(db, "users");
-      const uq = query(
-        usersRef, 
-        where("displayName", ">=", tagSearch),
-        where("displayName", "<=", tagSearch + '\uf8ff')
-      );
-      const uSnap = await getDocs(uq);
-      const uRes = uSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'user' }));
-
-      // Search Groups
-      const groupsRef = collection(db, "groups");
-      const gq = query(
-        groupsRef,
-        where("name", ">=", tagSearch),
-        where("name", "<=", tagSearch + '\uf8ff')
-      );
-      const gSnap = await getDocs(gq);
-      const gRes = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'group' }));
-
-      setSearchResults([...uRes, ...gRes]);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Search failed" });
-    } finally {
-      setIsSearching(false);
-    }
   };
 
   const dispatchTask = (target: any) => {
@@ -120,7 +129,7 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
 
   return (
     <Card className={cn(
-      "mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 group relative",
+      "mb-6 overflow-hidden transition-all duration-300 hover:shadow-md border-l-4 group relative rounded-[2rem]",
       meeting.type === 'shift' ? "border-l-accent" : "border-l-primary",
       isPending && "bg-amber-50/30 border-l-amber-400"
     )}>
@@ -175,7 +184,7 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
                 variant="ghost"
                 size="icon"
                 onClick={handleIndividualDownload}
-                className="text-muted-foreground hover:text-primary"
+                className="text-muted-foreground hover:text-primary rounded-full"
                 title="Download ICS"
               >
                 <Download className="w-5 h-5" />
@@ -185,7 +194,7 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
                 variant="ghost"
                 size="icon"
                 onClick={() => onRemove(meeting.id)}
-                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-full"
                 title="Delete Entry"
               >
                 <Trash2 className="w-5 h-5" />
@@ -232,44 +241,59 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
                 </PopoverTrigger>
                 <PopoverContent className="w-[320px] p-0 rounded-2xl shadow-2xl border-none" align="start">
                   <div className="p-4 border-b bg-slate-50 rounded-t-2xl">
-                    <form onSubmit={handleSearch} className="flex gap-2">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input 
-                        placeholder="Search name or group..." 
+                        placeholder="Type name or username..." 
                         value={tagSearch}
                         onChange={(e) => setTagSearch(e.target.value)}
-                        className="h-10 text-sm rounded-lg"
+                        className="h-10 pl-9 text-sm rounded-lg bg-white border-slate-200"
+                        autoFocus
                       />
-                      <Button type="submit" size="sm" className="h-10 rounded-lg px-3" disabled={isSearching}>
-                        {isSearching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
-                      </Button>
-                    </form>
+                    </div>
                   </div>
-                  <div className="max-h-[240px] overflow-auto p-2">
-                    {searchResults.length > 0 ? (
+                  <div className="max-h-[300px] overflow-auto p-2 space-y-1">
+                    {isSearching ? (
+                      <div className="flex items-center justify-center py-8 gap-2 text-slate-400">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Searching...</span>
+                      </div>
+                    ) : searchResults.length > 0 ? (
                       searchResults.map((t) => (
                         <button
                           key={t.id}
-                          className="w-full text-left px-4 py-3 text-sm hover:bg-primary/5 rounded-xl transition-colors flex items-center justify-between group"
+                          className="w-full text-left px-4 py-3 text-sm hover:bg-slate-50 rounded-xl transition-all flex items-center justify-between group active:scale-[0.98]"
                           onClick={() => dispatchTask(t)}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black",
-                              t.type === 'user' ? "bg-primary/10 text-primary" : "bg-accent/10 text-accent"
-                            )}>
-                              {t.type === 'user' ? <User className="w-4 h-4" /> : <Users className="w-4 h-4" />}
-                            </div>
+                            <Avatar className="w-10 h-10 rounded-xl">
+                              <AvatarFallback className={cn(
+                                "rounded-xl text-xs font-black",
+                                t.type === 'user' ? "bg-primary/10 text-primary" : "bg-accent/10 text-accent"
+                              )}>
+                                {t.type === 'user' ? (t.displayName?.substring(0, 1).toUpperCase() || <User className="w-4 h-4" />) : <Users className="w-4 h-4" />}
+                              </AvatarFallback>
+                            </Avatar>
                             <div>
-                              <p className="font-bold text-slate-900">{t.type === 'user' ? `@${t.displayName}` : t.name}</p>
-                              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-black">{t.type.toUpperCase()}</p>
+                              <p className="font-bold text-slate-900 leading-tight">
+                                {t.type === 'user' ? `@${t.displayName}` : t.name}
+                              </p>
+                              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">
+                                {t.type === 'user' ? 'Professional' : 'Team Group'}
+                              </p>
                             </div>
                           </div>
                           <Send className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
                         </button>
                       ))
                     ) : (
-                      <div className="p-8 text-center text-xs text-muted-foreground font-medium">
-                        {tagSearch ? "No results found" : "Enter a name to broadcast task"}
+                      <div className="p-8 text-center">
+                        <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-1">
+                          {tagSearch ? "No matches found" : "Start typing"}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          Search for usernames or team names.
+                        </p>
                       </div>
                     )}
                   </div>
