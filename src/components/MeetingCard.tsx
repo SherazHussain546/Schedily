@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Meeting, generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,9 @@ import {
   Loader2,
   UserPlus,
   Download,
-  Share
+  Share,
+  FileText,
+  Link as LinkIcon
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -60,6 +62,13 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
   const isEircode = /^[A-Z][0-9][0-9W]\s?[0-9A-Z]{4}$/i.test(meeting.location.trim());
   const isPending = meeting.status === 'pending';
 
+  // Smart URL extraction for related links
+  const detectedLinks = useMemo(() => {
+    if (!meeting.attachments) return [];
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return meeting.attachments.match(urlRegex) || [];
+  }, [meeting.attachments]);
+
   // Social-style live search logic
   useEffect(() => {
     const performSearch = async () => {
@@ -70,7 +79,6 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
 
       setIsSearching(true);
       try {
-        // Search Users by display name prefix
         const usersRef = collection(db, "users");
         const uq = query(
           usersRef, 
@@ -80,7 +88,6 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
         const uSnap = await getDocs(uq);
         const uRes = uSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'user' }));
 
-        // Search Groups by name prefix
         const groupsRef = collection(db, "groups");
         const gq = query(
           groupsRef,
@@ -90,7 +97,6 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
         const gSnap = await getDocs(gq);
         const gRes = gSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), type: 'group' }));
 
-        // Combine and limit results for the suggestion list
         setSearchResults([...uRes, ...gRes].slice(0, 6));
       } catch (error) {
         console.error("Search failed:", error);
@@ -99,7 +105,7 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
       }
     };
 
-    const timer = setTimeout(performSearch, 300); // 300ms debounce
+    const timer = setTimeout(performSearch, 300);
     return () => clearTimeout(timer);
   }, [tagSearch, db]);
 
@@ -125,6 +131,16 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
     const filename = `${meeting.title || (meeting.type === 'shift' ? 'Shift' : 'Meeting')}-${meeting.date}.ics`;
     downloadICS(content, filename);
     toast({ title: "Calendar Event Generated" });
+  };
+
+  const downloadAttachment = (url: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = "_blank";
+    link.download = url.split('/').pop() || 'attachment';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -317,15 +333,43 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-widest">
-                  <Paperclip className="w-4 h-4" /> Related Links
+                  <Paperclip className="w-4 h-4" /> Related Links & Attachments
                 </Label>
-                <Textarea
-                  placeholder="Links to docs or resources..."
-                  value={meeting.attachments || ''}
-                  onChange={(e) => onUpdate(meeting.id, { attachments: e.target.value })}
-                  className="bg-background focus:ring-primary min-h-[100px] rounded-xl font-medium"
-                  disabled={isPending}
-                />
+                <div className="space-y-3">
+                  <Textarea
+                    placeholder="Paste URLs to docs, images, or project files..."
+                    value={meeting.attachments || ''}
+                    onChange={(e) => onUpdate(meeting.id, { attachments: e.target.value })}
+                    className="bg-background focus:ring-primary min-h-[100px] rounded-xl font-medium"
+                    disabled={isPending}
+                  />
+                  {detectedLinks.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-2 animate-in fade-in slide-in-from-top-1">
+                      {detectedLinks.map((url, i) => (
+                        <div key={i} className="flex items-center gap-1.5 p-1.5 bg-slate-50 border rounded-lg text-[10px] font-bold">
+                          <LinkIcon className="w-3 h-3 text-primary" />
+                          <span className="text-slate-500 truncate max-w-[120px]">Resource {i+1}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 rounded-md hover:bg-primary/10 hover:text-primary"
+                            onClick={() => window.open(url, '_blank')}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 rounded-md hover:bg-accent/10 hover:text-accent"
+                            onClick={() => downloadAttachment(url)}
+                          >
+                            <Download className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
           </div>
 

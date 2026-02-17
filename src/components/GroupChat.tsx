@@ -13,9 +13,8 @@ import { collection, query, orderBy, serverTimestamp, limit } from 'firebase/fir
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Loader2, Paperclip, X, Image as ImageIcon, Film } from 'lucide-react';
+import { MessageSquare, Send, Loader2, Paperclip, X, Image as ImageIcon, Film, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 interface GroupChatProps {
   groupId: string;
@@ -84,6 +83,15 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
     setIsUploading(false);
   };
 
+  const downloadMedia = (url: string, filename: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-50">
       <header className="p-4 border-b bg-white flex items-center gap-3">
@@ -120,7 +128,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                   )}
                   
                   <div className={cn(
-                    "flex flex-col gap-2 rounded-2xl p-1.5 shadow-sm transition-all overflow-hidden",
+                    "flex flex-col gap-2 rounded-2xl p-1.5 shadow-sm transition-all overflow-hidden relative group",
                     isMe 
                       ? "bg-primary text-white rounded-tr-none" 
                       : "bg-white text-slate-900 rounded-tl-none border border-slate-100"
@@ -136,10 +144,16 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                         ) : (
                           <video 
                             src={msg.mediaUrl} 
-                            controls 
                             className="w-full h-full object-cover"
                           />
                         )}
+                        <button 
+                          onClick={() => downloadMedia(msg.mediaUrl, `schedily-media-${msg.id}`)}
+                          className="absolute top-2 right-2 p-2 bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+                          title="Download Media"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
                       </div>
                     )}
                     
