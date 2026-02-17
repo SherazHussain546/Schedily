@@ -134,8 +134,8 @@ export default function HowItWorksPage() {
 
       <footer className="py-20 border-t bg-slate-50">
         <div className="container mx-auto px-4 text-center space-y-6">
-          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
-            © 2025 Schedily Hub. Developed by Sheraz Hussain for SYNC TECH Solutions.
+          <p className="text-slate-400 text-sm font-bold uppercase tracking-widest leading-relaxed">
+            © 2025 Schedily Hub. Developed by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Sheraz Hussain</a> for <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">SYNC TECH Solutions</a>.
           </p>
         </div>
       </footer>

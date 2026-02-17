@@ -7,13 +7,10 @@ import { Button } from "@/components/ui/button";
 import { 
   Sparkles, 
   ArrowLeft, 
-  ShieldCheck, 
-  Zap, 
   Target, 
   Users, 
-  Lock,
+  Zap,
   Globe,
-  Star,
   Award,
   Heart
 } from "lucide-react";
@@ -69,7 +66,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-3xl font-black text-slate-900">The Creators</h3>
               <p className="text-slate-600 font-medium leading-relaxed">
-                Schedily is the result of dedicated engineering by <strong>Sheraz Hussain</strong>, who led the effort to build this high-performance portal. <strong>SYNC TECH Solutions</strong> acted as the supporting agency to bring this transformative idea to life.
+                Schedily is the result of dedicated engineering by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline">Sheraz Hussain</a>, who led the effort to build this high-performance portal. <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline">SYNC TECH Solutions</a> acted as the supporting agency to bring this transformative idea to life.
               </p>
             </div>
           </div>
@@ -89,7 +86,7 @@ export default function AboutPage() {
               </blockquote>
               <div className="flex items-center gap-2 pt-4 border-t border-white/10">
                 <Heart className="w-4 h-4 text-rose-400 fill-current" />
-                <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Powered by SYNC TECH Solutions Agency</p>
+                <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Powered by <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">SYNC TECH Solutions Agency</a></p>
               </div>
             </div>
           </section>
@@ -125,8 +122,8 @@ export default function AboutPage() {
 
       <footer className="py-20 bg-slate-900 text-white border-t">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">
-            © 2025 Schedily. Engineered by Sheraz Hussain. Agency support by SYNC TECH Solutions.
+          <p className="text-slate-500 text-sm font-bold uppercase tracking-widest leading-relaxed">
+            © 2025 Schedily. Engineered by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-primary transition-colors">Sheraz Hussain</a>. Agency support by <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-primary transition-colors">SYNC TECH Solutions</a>.
           </p>
         </div>
       </footer>

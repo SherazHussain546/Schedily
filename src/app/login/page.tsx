@@ -13,12 +13,10 @@ import {
   Mail, 
   Lock, 
   LogIn, 
-  UserPlus, 
   Loader2, 
   ArrowLeft, 
   User, 
   Building, 
-  Briefcase, 
   ChevronRight, 
   ChevronLeft,
   CheckCircle2
@@ -368,7 +366,7 @@ export default function LoginPage(props: {
       </Card>
       
       <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-        © {new Date().getFullYear()} Schedily Portal. Developed by Sheraz Hussain for SYNC TECH Solutions.
+        © {new Date().getFullYear()} Schedily Portal. Developed by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-primary">Sheraz Hussain</a> for <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-primary">SYNC TECH Solutions</a>.
       </p>
       <Toaster />
     </div>

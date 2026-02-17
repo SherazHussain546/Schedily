@@ -13,22 +13,13 @@ import {
   Loader2, 
   LogOut, 
   User as UserIcon,
-  Info,
   Users,
   UserPlus,
-  ArrowRight,
-  TrendingUp,
-  Search,
-  MessageSquare,
-  ShieldCheck,
   Zap,
-  Clock,
   CalendarDays,
   MailWarning,
-  CheckCircle2,
   Globe,
-  BellRing,
-  HelpCircle
+  BellRing
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -48,7 +39,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { triggerNotification } from "@/app/actions/notifications";
-import { Badge } from "@/components/ui/badge";
 
 export default function SchedilyDashboard(props: {
   params: Promise<any>;
@@ -316,7 +306,6 @@ export default function SchedilyDashboard(props: {
       <main className="relative">
         {!user ? (
           <div className="flex flex-col">
-            {/* Hero Section */}
             <section className="relative pt-12 pb-20 sm:pt-24 sm:pb-32 overflow-hidden bg-white">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-64 h-64 sm:w-96 sm:h-96 bg-primary/5 rounded-full blur-[80px] sm:blur-[120px]" />
@@ -325,7 +314,7 @@ export default function SchedilyDashboard(props: {
 
               <div className="container mx-auto px-4 text-center">
                 <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full bg-slate-50 border border-slate-200 shadow-sm text-primary font-black text-[9px] sm:text-[10px] uppercase tracking-[0.2em] mb-8 sm:mb-12">
-                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 fill-current" /> Engineered by Sheraz Hussain
+                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 fill-current" /> Engineered by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary/70">Sheraz Hussain</a>
                 </div>
                 
                 <h1 className="text-4xl sm:text-6xl md:text-8xl font-black font-headline text-slate-900 mb-6 sm:mb-8 leading-[1.1] sm:leading-[0.95] tracking-tight sm:tracking-tighter">
@@ -372,7 +361,6 @@ export default function SchedilyDashboard(props: {
               </div>
             </section>
 
-            {/* Features Section */}
             <section className="py-16 sm:py-32 bg-slate-50">
                <div className="container mx-auto px-4">
                   <div className="text-center mb-16 sm:mb-24 space-y-4">
@@ -418,20 +406,19 @@ export default function SchedilyDashboard(props: {
                </div>
             </section>
 
-            {/* SYNC TECH Agency Branding */}
             <section className="py-16 sm:py-24 bg-primary text-primary-foreground relative overflow-hidden">
                <div className="absolute top-0 right-0 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] bg-white/5 rounded-full -mr-48 -mt-48 sm:-mr-72 -mt-72 blur-[80px] sm:blur-[100px]" />
                <div className="container mx-auto px-4 relative z-10">
                   <div className="flex flex-col md:flex-row items-center justify-between gap-10 sm:gap-12">
                      <div className="max-w-xl space-y-6 text-center md:text-left">
                         <div className="inline-flex items-center gap-2 text-white/80 font-black text-[9px] sm:text-[10px] uppercase tracking-widest">
-                           <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" /> Professional Integrity
+                           <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" /> Professional Integrity
                         </div>
                         <h3 className="text-3xl sm:text-4xl md:text-5xl font-black font-headline leading-tight tracking-tight">
-                           Engineered by Sheraz Hussain
+                           Engineered by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors">Sheraz Hussain</a>
                         </h3>
                         <p className="text-primary-foreground/70 text-base sm:text-lg font-medium">
-                           Schedily is a premium coordination portal built with the support and agency expertise of SYNC TECH Solutions.
+                           Schedily is a premium coordination portal built with the support and agency expertise of <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors underline">SYNC TECH Solutions</a>.
                         </p>
                         <Link href="/about" className="inline-block pt-2 sm:pt-4">
                            <Button variant="secondary" size="lg" className="rounded-xl px-8 sm:px-10 h-12 sm:h-14 font-black">
@@ -455,9 +442,8 @@ export default function SchedilyDashboard(props: {
                </div>
             </section>
 
-            {/* Final CTA */}
-            <section className="py-20 sm:py-32 bg-white">
-               <div className="container mx-auto px-4 text-center">
+            <section className="py-20 sm:py-32 bg-white text-center">
+               <div className="container mx-auto px-4">
                   <h3 className="text-4xl sm:text-5xl md:text-7xl font-black font-headline text-slate-900 mb-8 sm:mb-10 tracking-tighter">
                      Ready to <span className="text-primary">Sync</span> Your Team?
                   </h3>
@@ -485,7 +471,7 @@ export default function SchedilyDashboard(props: {
                       </h1>
                     </Link>
                     <p className="text-slate-400 text-sm sm:text-base font-medium leading-relaxed">
-                      Professional social coordination portal engineered by Sheraz Hussain.
+                      Professional social coordination portal engineered by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="text-white hover:text-primary transition-colors">Sheraz Hussain</a>.
                     </p>
                   </div>
                   <div className="space-y-3 sm:space-y-4">
@@ -499,8 +485,8 @@ export default function SchedilyDashboard(props: {
                   <div className="space-y-3 sm:space-y-4">
                     <h5 className="font-black uppercase tracking-widest text-[10px] sm:text-xs text-slate-500">Agency & Credits</h5>
                     <ul className="space-y-1 sm:space-y-2">
-                      <li className="text-slate-400 text-[10px] sm:text-xs">Developed by <strong>Sheraz Hussain</strong></li>
-                      <li className="text-slate-400 text-[10px] sm:text-xs">Agency: <strong>SYNC TECH Solutions</strong></li>
+                      <li className="text-slate-400 text-[10px] sm:text-xs">Developed by <a href="https://sheraz.synctech.ie" target="_blank" rel="noopener noreferrer" className="font-bold hover:text-white transition-colors">Sheraz Hussain</a></li>
+                      <li className="text-slate-400 text-[10px] sm:text-xs">Agency: <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="font-bold hover:text-white transition-colors">SYNC TECH Solutions</a></li>
                     </ul>
                   </div>
                 </div>
@@ -515,13 +501,13 @@ export default function SchedilyDashboard(props: {
             <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-8">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-primary font-bold text-[10px] sm:text-sm uppercase tracking-widest">
-                  <TrendingUp className="w-4 h-4" /> Team Coordination
+                  <Zap className="w-4 h-4" /> Team Coordination
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-black font-headline text-slate-900 tracking-tight">Social Groups</h2>
               </div>
               <div className="flex flex-row gap-2 sm:gap-4">
                 <Button onClick={() => addItem('meeting')} variant="outline" className="flex-1 sm:flex-none h-12 sm:h-14 px-4 sm:px-8 rounded-xl sm:rounded-2xl border-slate-200 bg-white font-bold hover:border-primary/50 transition-all shadow-sm">
-                  <MessageSquare className="w-5 h-5 sm:mr-2 text-primary" /> <span className="hidden sm:inline">Meeting</span>
+                  <Users className="w-5 h-5 sm:mr-2 text-primary" /> <span className="hidden sm:inline">Meeting</span>
                 </Button>
                 <Button onClick={() => addItem('shift')} className="flex-1 sm:flex-none bg-accent hover:bg-accent/90 text-white h-12 sm:h-14 px-4 sm:px-10 rounded-xl sm:rounded-2xl font-bold shadow-xl shadow-accent/20 transition-all transform hover:scale-105">
                   <Briefcase className="w-5 h-5 sm:mr-2" /> <span className="hidden sm:inline">New Shift</span>
@@ -569,20 +555,6 @@ export default function SchedilyDashboard(props: {
                   className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white font-black rounded-xl sm:rounded-2xl h-12 sm:h-14 px-6 sm:px-8 shadow-xl shadow-primary/20 transform transition-all active:scale-95 flex items-center justify-center gap-3 relative z-10"
                 >
                   <Download className="w-5 h-5" /> Export Schedule (.ics)
-                </Button>
-              </div>
-            )}
-
-            {expiredMeetings.length > 0 && (
-              <div className="mb-8 sm:mb-10 p-4 sm:p-5 bg-white border border-slate-100 rounded-2xl sm:rounded-3xl flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-500 font-medium">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100">
-                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70" />
-                  </div>
-                  <span>Archive {expiredMeetings.length} historical tasks.</span>
-                </div>
-                <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-primary hover:bg-primary/5 rounded-full font-black px-4 sm:px-6 h-8 sm:h-9">
-                  Archive
                 </Button>
               </div>
             )}
