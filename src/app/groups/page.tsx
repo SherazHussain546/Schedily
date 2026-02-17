@@ -180,19 +180,19 @@ export default function GroupsPage(props: {
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        <header className="flex items-center justify-between mb-12">
-          <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold">
+        <header className="flex items-center justify-between mb-8 sm:mb-12">
+          <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4" /> Hub
           </Link>
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
-            <h1 className="text-xl font-bold font-headline">Team Management</h1>
+            <h1 className="text-lg sm:text-xl font-bold font-headline">Team Management</h1>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           <div className="md:col-span-1 space-y-6">
-            <Card className="shadow-lg border-none rounded-3xl">
+            <Card className="shadow-lg border-none rounded-[1.5rem] sm:rounded-3xl">
               <CardHeader>
                 <CardTitle className="text-lg">Start New Team</CardTitle>
                 <CardDescription>Coordinate an entire department or circle.</CardDescription>
@@ -200,15 +200,15 @@ export default function GroupsPage(props: {
               <CardContent>
                 <form onSubmit={createGroup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Department Name</Label>
+                    <Label className="text-xs sm:text-sm">Department Name</Label>
                     <Input 
                       placeholder="e.g. Dublin Tech Ops" 
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
-                      className="rounded-xl"
+                      className="rounded-xl h-11 sm:h-12"
                     />
                   </div>
-                  <Button className="w-full rounded-xl h-12 font-bold" disabled={isCreating}>
+                  <Button className="w-full rounded-xl h-11 sm:h-12 font-bold" disabled={isCreating}>
                     {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
                     Launch Group
                   </Button>
@@ -230,23 +230,23 @@ export default function GroupsPage(props: {
               ) : myOwnedGroups && myOwnedGroups.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
                   {myOwnedGroups.map((group: any) => (
-                    <Card key={group.id} className="shadow-sm border border-slate-100 rounded-3xl hover:border-primary/20 transition-all overflow-hidden bg-white">
-                      <div className="p-6 flex items-center justify-between">
+                    <Card key={group.id} className="shadow-sm border border-slate-100 rounded-[1.5rem] sm:rounded-3xl hover:border-primary/20 transition-all overflow-hidden bg-white">
+                      <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                            <Users className="w-6 h-6" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-primary shrink-0">
+                            <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                           </div>
-                          <div>
-                            <h4 className="font-bold text-lg text-slate-900">{group.name}</h4>
-                            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Group ID: {group.id.substring(0, 8)}</p>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-base sm:text-lg text-slate-900 truncate">{group.name}</h4>
+                            <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-widest font-black truncate">ID: {group.id.substring(0, 8)}</p>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                           <Sheet>
                             <SheetTrigger asChild>
-                              <Button variant="ghost" size="sm" className="rounded-xl font-bold text-slate-600 hover:bg-slate-100">
-                                <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                              <Button variant="ghost" size="sm" className="flex-1 sm:flex-none rounded-xl font-bold text-slate-600 hover:bg-slate-100 h-9 px-3">
+                                <MessageSquare className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Chat</span>
                               </Button>
                             </SheetTrigger>
                             <SheetContent side="right" className="p-0 w-full sm:max-w-md border-none flex flex-col">
@@ -260,11 +260,11 @@ export default function GroupsPage(props: {
 
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button variant="ghost" size="sm" className="rounded-xl font-bold text-primary hover:bg-primary/5">
-                                <UserPlus className="w-4 h-4 mr-2" /> Invite
+                              <Button variant="ghost" size="sm" className="flex-1 sm:flex-none rounded-xl font-bold text-primary hover:bg-primary/5 h-9 px-3">
+                                <UserPlus className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Invite</span>
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="rounded-3xl">
+                            <DialogContent className="rounded-3xl w-[95vw] sm:w-full">
                               <DialogHeader>
                                 <DialogTitle>Invite Teammate to {group.name}</DialogTitle>
                               </DialogHeader>
@@ -274,9 +274,9 @@ export default function GroupsPage(props: {
                                     placeholder="Search by username..." 
                                     value={memberSearch}
                                     onChange={(e) => setMemberSearch(e.target.value)}
-                                    className="rounded-xl"
+                                    className="rounded-xl h-11"
                                   />
-                                  <Button type="submit" className="rounded-xl"><Search className="w-4 h-4" /></Button>
+                                  <Button type="submit" className="rounded-xl px-4"><Search className="w-4 h-4" /></Button>
                                 </form>
                                 <div className="space-y-2 max-h-[300px] overflow-auto">
                                   {searchResults.map(u => (
@@ -285,7 +285,7 @@ export default function GroupsPage(props: {
                                         <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-black text-primary border">
                                           {u.displayName?.charAt(0).toUpperCase()}
                                         </div>
-                                        <span className="font-bold text-sm">@{u.displayName}</span>
+                                        <span className="font-bold text-xs sm:text-sm">@{u.displayName}</span>
                                       </div>
                                       <Button size="sm" className="rounded-xl font-bold h-8" onClick={() => addMember(group.id, group.name, u)}>Add</Button>
                                     </div>
@@ -304,7 +304,7 @@ export default function GroupsPage(props: {
                                 deleteDocumentNonBlocking(doc(db, "users", user.uid, "memberships", group.id));
                               }
                             }}
-                            className="text-slate-300 hover:text-destructive rounded-xl"
+                            className="text-slate-300 hover:text-destructive rounded-xl h-9 w-9 shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -314,7 +314,7 @@ export default function GroupsPage(props: {
                   ))}
                 </div>
               ) : (
-                <div className="py-12 text-center bg-white border border-dashed rounded-[2rem] text-slate-400 text-sm font-medium">
+                <div className="py-12 text-center bg-white border border-dashed rounded-[1.5rem] sm:rounded-[2rem] text-slate-400 text-sm font-medium">
                   No professional circles launched.
                 </div>
               )}
@@ -332,23 +332,23 @@ export default function GroupsPage(props: {
               ) : joinedCircles.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
                   {joinedCircles.map((membership: any) => (
-                    <Card key={membership.id} className="shadow-sm border border-slate-100 rounded-3xl hover:border-accent/20 transition-all overflow-hidden bg-white">
-                      <div className="p-6 flex items-center justify-between">
+                    <Card key={membership.id} className="shadow-sm border border-slate-100 rounded-[1.5rem] sm:rounded-3xl hover:border-accent/20 transition-all overflow-hidden bg-white">
+                      <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
-                            <DoorOpen className="w-6 h-6" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-accent/10 rounded-xl sm:rounded-2xl flex items-center justify-center text-accent shrink-0">
+                            <DoorOpen className="w-5 h-5 sm:w-6 sm:h-6" />
                           </div>
-                          <div>
-                            <h4 className="font-bold text-lg text-slate-900">{membership.groupName}</h4>
-                            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Member Status: ACTIVE</p>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-base sm:text-lg text-slate-900 truncate">{membership.groupName}</h4>
+                            <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-widest font-black truncate">Status: ACTIVE</p>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                           <Sheet>
                             <SheetTrigger asChild>
-                              <Button variant="ghost" size="sm" className="rounded-xl font-bold text-slate-600 hover:bg-slate-100">
-                                <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                              <Button variant="ghost" size="sm" className="flex-1 sm:flex-none rounded-xl font-bold text-slate-600 hover:bg-slate-100 h-9 px-3">
+                                <MessageSquare className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Chat</span>
                               </Button>
                             </SheetTrigger>
                             <SheetContent side="right" className="p-0 w-full sm:max-w-md border-none flex flex-col">
@@ -369,7 +369,7 @@ export default function GroupsPage(props: {
                                 deleteDocumentNonBlocking(doc(db, "users", user.uid, "memberships", membership.id));
                               }
                             }}
-                            className="text-slate-300 hover:text-destructive rounded-xl"
+                            className="text-slate-300 hover:text-destructive rounded-xl h-9 w-9 shrink-0"
                             title="Leave Group"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -380,7 +380,7 @@ export default function GroupsPage(props: {
                   ))}
                 </div>
               ) : (
-                <div className="py-12 text-center bg-white border border-dashed rounded-[2rem] text-slate-400 text-sm font-medium">
+                <div className="py-12 text-center bg-white border border-dashed rounded-[1.5rem] sm:rounded-[2rem] text-slate-400 text-sm font-medium">
                   You haven't been invited to any circles yet.
                 </div>
               )}
