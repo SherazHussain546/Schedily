@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, use } from "react";
@@ -14,7 +15,9 @@ import {
   ArrowLeft, 
   Loader2, 
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  TrendingUp,
+  UserCheck
 } from "lucide-react";
 import { 
   useUser, 
@@ -44,13 +47,20 @@ export default function NetworkPage(props: {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Fetch following to check status
+  // Fetch following
   const followingQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "following");
   }, [db, user]);
 
+  // Fetch followers (who is following me)
+  const followersQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "followers");
+  }, [db, user]);
+
   const { data: followingList } = useCollection(followingQuery);
+  const { data: followersList, isLoading: isFollowersLoading } = useCollection(followersQuery);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,16 +95,26 @@ export default function NetworkPage(props: {
     
     const isFollowing = followingList?.some(f => f.id === targetUser.id);
     const followRef = doc(db, "users", user.uid, "following", targetUser.id);
+    const followerRef = doc(db, "users", targetUser.id, "followers", user.uid);
 
     if (isFollowing) {
       deleteDocumentNonBlocking(followRef);
+      deleteDocumentNonBlocking(followerRef);
       toast({ title: "Unfollowed", description: `Removed @${targetUser.displayName}` });
     } else {
+      // 1. Add to my following list
       setDocumentNonBlocking(followRef, {
         targetId: targetUser.id,
         targetName: targetUser.displayName,
         createdAt: serverTimestamp(),
       });
+      // 2. Add to their followers list (Reciprocal write)
+      setDocumentNonBlocking(followerRef, {
+        followerId: user.uid,
+        followerName: user.displayName || "Professional",
+        createdAt: serverTimestamp(),
+      });
+      
       toast({ 
         title: "Connected!", 
         description: `You are now following @${targetUser.displayName}` 
@@ -191,31 +211,62 @@ export default function NetworkPage(props: {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <h3 className="text-xl font-bold flex items-center gap-2 px-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Currently Following
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {followingList && followingList.length > 0 ? (
-              followingList.map((f: any) => (
-                <div key={f.id} className="p-4 bg-white border rounded-2xl flex items-center justify-between shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-primary">
-                      {f.targetName?.substring(0, 1).toUpperCase()}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <section className="space-y-6">
+            <h3 className="text-xl font-bold flex items-center gap-2 px-2">
+              <TrendingUp className="w-5 h-5 text-emerald-500" /> Following
+            </h3>
+            <div className="grid grid-cols-1 gap-4">
+              {followingList && followingList.length > 0 ? (
+                followingList.map((f: any) => (
+                  <div key={f.id} className="p-4 bg-white border rounded-2xl flex items-center justify-between shadow-sm hover:border-primary/20 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-primary">
+                        {f.targetName?.substring(0, 1).toUpperCase()}
+                      </div>
+                      <span className="font-bold text-sm">@{f.targetName}</span>
                     </div>
-                    <span className="font-bold text-sm">@{f.targetName}</span>
+                    <Button variant="ghost" size="icon" onClick={() => toggleFollow({ id: f.id, displayName: f.targetName })} className="rounded-xl hover:text-destructive">
+                      <UserMinus className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => toggleFollow({ id: f.id, displayName: f.targetName })}>
-                    <UserMinus className="w-4 h-4 text-slate-400" />
-                  </Button>
+                ))
+              ) : (
+                <div className="p-12 bg-white border border-dashed rounded-3xl text-center text-slate-400 text-sm">
+                  You aren't following anyone yet.
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full p-12 bg-white border border-dashed rounded-3xl text-center text-slate-400">
-                You haven't followed anyone yet. Build your team!
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </section>
+
+          <section className="space-y-6">
+            <h3 className="text-xl font-bold flex items-center gap-2 px-2">
+              <UserCheck className="w-5 h-5 text-primary" /> Network Followers
+            </h3>
+            <div className="grid grid-cols-1 gap-4">
+              {isFollowersLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary/30" />
+                </div>
+              ) : followersList && followersList.length > 0 ? (
+                followersList.map((f: any) => (
+                  <div key={f.id} className="p-4 bg-white border rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center font-bold text-primary">
+                        {f.followerName?.substring(0, 1).toUpperCase()}
+                      </div>
+                      <span className="font-bold text-sm">@{f.followerName}</span>
+                    </div>
+                    <Badge variant="outline" className="rounded-full bg-primary/5 text-primary border-primary/10 text-[10px] font-black uppercase tracking-widest">Follower</Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="p-12 bg-white border border-dashed rounded-3xl text-center text-slate-400 text-sm">
+                  No followers yet. Build your professional presence!
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       </div>
       <Toaster />

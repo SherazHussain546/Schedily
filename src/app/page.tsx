@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, use } from "react";
@@ -22,7 +23,8 @@ import {
   ShieldCheck,
   Zap,
   Clock,
-  CalendarDays
+  CalendarDays,
+  MailWarning
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -42,6 +44,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { generateICSContent, downloadICS } from "@/lib/calendar-utils";
 import { triggerNotification } from "@/app/actions/notifications";
+import { Badge } from "@/components/ui/badge";
 
 export default function SchedilyDashboard(props: {
   params: Promise<any>;
@@ -71,18 +74,11 @@ export default function SchedilyDashboard(props: {
 
   const { data: allMeetings, isLoading: isMeetingsLoading } = useCollection<Meeting>(meetingsQuery);
 
-  // Fetch Following
-  const followingQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return collection(db, "users", user.uid, "following");
-  }, [db, user]);
-
-  const { data: followingList } = useCollection(followingQuery);
-
   const today = new Date().toISOString().split('T')[0];
   const currentMeetings = allMeetings?.filter(m => m.date >= today) || [];
+  const pendingInvites = currentMeetings.filter(m => m.status === 'pending');
+  const activeSchedule = currentMeetings.filter(m => m.status !== 'pending');
   const expiredMeetings = allMeetings?.filter(m => m.date < today) || [];
-  const acceptedMeetings = currentMeetings.filter(m => m.status !== 'pending');
 
   const handleSignOut = async () => {
     try {
@@ -156,15 +152,10 @@ export default function SchedilyDashboard(props: {
   };
 
   const handleDownload = () => {
-    if (!currentMeetings || currentMeetings.length === 0) return;
-    const acceptedOnly = currentMeetings.filter(m => m.status !== 'pending');
-    if (acceptedOnly.length === 0) {
-      toast({ title: "Nothing to Export", description: "Accept shared entries first." });
-      return;
-    }
-    const content = generateICSContent(acceptedOnly);
+    if (!activeSchedule || activeSchedule.length === 0) return;
+    const content = generateICSContent(activeSchedule);
     downloadICS(content, `schedule-${today}.ics`);
-    toast({ title: "Calendar Generated", description: `Exported ${acceptedOnly.length} items.` });
+    toast({ title: "Calendar Generated", description: `Exported ${activeSchedule.length} items.` });
   };
 
   const shareWithUser = async (meeting: Meeting, targetUsername: string) => {
@@ -197,7 +188,7 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      // Notify the recipient via email (simulation)
+      // Notify the recipient via email
       triggerNotification({
         recipientEmail: targetUserData.email,
         recipientName: targetUserData.displayName || 'Professional',
@@ -228,7 +219,7 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      // Notify group members (In a real app, this would be a bulk operation)
+      // Notify group members
       const membersRef = collection(db, "groups", groupId, "members");
       const membersSnap = await getDocs(membersRef);
       membersSnap.docs.forEach(memberDoc => {
@@ -388,7 +379,29 @@ export default function SchedilyDashboard(props: {
               </div>
             </div>
 
-            {acceptedMeetings.length > 0 && (
+            {pendingInvites.length > 0 && (
+              <section className="mb-12 space-y-4">
+                <h3 className="text-xl font-black flex items-center gap-2 px-2 text-amber-600">
+                  <MailWarning className="w-5 h-5" /> Pending Coordination Invitations
+                </h3>
+                <div className="space-y-4">
+                  {pendingInvites.map((meeting) => (
+                    <MeetingCard
+                      key={meeting.id}
+                      meeting={meeting}
+                      db={db}
+                      onUpdate={updateMeeting}
+                      onRemove={removeMeeting}
+                      onShare={shareWithUser}
+                      onShareGroup={shareWithGroup}
+                      onAccept={acceptMeeting}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeSchedule.length > 0 && (
               <div className="mb-10 p-6 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/20 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16" />
                 <div className="flex items-center gap-5">
@@ -397,7 +410,7 @@ export default function SchedilyDashboard(props: {
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-slate-900 tracking-tight">Full Schedule Sync</h3>
-                    <p className="text-slate-500 font-medium">Bulk export all {acceptedMeetings.length} coordination entries to your calendar.</p>
+                    <p className="text-slate-500 font-medium">Bulk export all {activeSchedule.length} coordination entries to your calendar.</p>
                   </div>
                 </div>
                 <Button 
@@ -430,8 +443,8 @@ export default function SchedilyDashboard(props: {
                   <Loader2 className="w-12 h-12 animate-spin text-primary/40" />
                   <p className="text-slate-400 font-bold">Syncing Team Hub...</p>
                 </div>
-              ) : currentMeetings.length > 0 ? (
-                currentMeetings.map((meeting) => (
+              ) : activeSchedule.length > 0 ? (
+                activeSchedule.map((meeting) => (
                   <MeetingCard
                     key={meeting.id}
                     meeting={meeting}
@@ -443,7 +456,7 @@ export default function SchedilyDashboard(props: {
                     onAccept={acceptMeeting}
                   />
                 ))
-              ) : (
+              ) : pendingInvites.length === 0 && (
                 <div className="text-center py-32 border-4 border-dashed border-slate-200 rounded-[64px] bg-white/50 group">
                   <div className="w-24 h-24 bg-white rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-8 border border-slate-100">
                     <CalendarPlus className="w-12 h-12 text-slate-300" />
