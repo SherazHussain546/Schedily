@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -63,7 +62,10 @@
         },
         "type": {
           "type": "string",
-          "enum": ["meeting", "shift"]
+          "enum": [
+            "meeting",
+            "shift"
+          ]
         },
         "employeeName": {
           "type": "string"
@@ -118,27 +120,17 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "User profile data."
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/UserProfile"
       },
-      {
-        "path": "/users/{userId}/meetings/{meetingId}",
-        "definition": {
-          "entityName": "Meeting",
-          "schema": {
-            "$ref": "#/backend/entities/Meeting"
-          },
-          "description": "User meetings/shifts."
-        }
-      }
-    ]
+      "description": "User profile data."
+    },
+    "/users/{userId}/meetings/{meetingId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Meeting"
+      },
+      "description": "User meetings and retail shifts."
+    }
   }
 }
