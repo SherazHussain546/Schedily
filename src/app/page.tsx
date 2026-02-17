@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, use } from "react";
@@ -324,7 +325,7 @@ export default function SchedilyDashboard(props: {
 
               <div className="container mx-auto px-4 text-center">
                 <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-50 border border-slate-200 shadow-sm text-primary font-black text-[10px] uppercase tracking-[0.2em] mb-12">
-                  <Zap className="w-4 h-4 fill-current" /> Engineered by SYNC TECH Solutions
+                  <Zap className="w-4 h-4 fill-current" /> Engineered by Sheraz Hussain
                 </div>
                 
                 <h1 className="text-6xl md:text-8xl font-black font-headline text-slate-900 mb-8 leading-[0.95] tracking-tighter">
@@ -333,7 +334,7 @@ export default function SchedilyDashboard(props: {
                 </h1>
                 
                 <p className="text-slate-500 text-xl md:text-2xl max-w-3xl mx-auto mb-14 leading-relaxed font-medium text-balance">
-                  The future of team synchronization. Tag teammates, dispatch retail shifts, and coordinate department schedules with a social-first ecosystem.
+                  The future of team synchronization. Tag teammates, dispatch retail shifts, and coordinate department schedules with a social-first Schedily portal.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-24">
@@ -363,36 +364,12 @@ export default function SchedilyDashboard(props: {
                         </div>
                         <div className="text-left">
                            <p className="font-black text-sm uppercase tracking-widest">Universal Sync</p>
-                           <p className="text-white/80 font-medium">Your entire schedule, unified across all your professional devices.</p>
+                           <p className="text-white/80 font-medium">Your entire schedule, unified through the Schedily Portal.</p>
                         </div>
                      </div>
                   </div>
                 </div>
               </div>
-            </section>
-
-            {/* Stats Bar */}
-            <section className="bg-white border-y py-12">
-               <div className="container mx-auto px-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-                     <div>
-                        <p className="text-4xl font-black text-slate-900 mb-1">10k+</p>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Shifts Synced</p>
-                     </div>
-                     <div>
-                        <p className="text-4xl font-black text-slate-900 mb-1">500+</p>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Team Circles</p>
-                     </div>
-                     <div>
-                        <p className="text-4xl font-black text-slate-900 mb-1">99.9%</p>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Dispatch Uptime</p>
-                     </div>
-                     <div>
-                        <p className="text-4xl font-black text-slate-900 mb-1">100%</p>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Privacy Secured</p>
-                     </div>
-                  </div>
-               </div>
             </section>
 
             {/* Features Section */}
@@ -403,7 +380,7 @@ export default function SchedilyDashboard(props: {
                         Built for <span className="text-accent italic">Performance.</span>
                      </h2>
                      <p className="text-slate-500 text-lg font-medium max-w-2xl mx-auto">
-                        Everything you need to coordinate complex team schedules in a high-speed professional environment.
+                        Everything you need to coordinate complex team schedules in a high-speed professional Schedily portal.
                      </p>
                   </div>
 
@@ -414,7 +391,7 @@ export default function SchedilyDashboard(props: {
                       </div>
                       <h4 className="text-2xl font-black text-slate-900 mb-4">Social Tagging</h4>
                       <p className="text-slate-500 font-medium leading-relaxed">
-                        Tag colleagues and groups just like on social media. Dispatch shifts instantly to their private mailbox and calendar.
+                        Tag colleagues and groups just like on social media. Dispatch shifts instantly to their Schedily mailbox and calendar.
                       </p>
                     </div>
                     
@@ -422,7 +399,7 @@ export default function SchedilyDashboard(props: {
                       <div className="w-16 h-16 bg-accent/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
                         <Globe className="w-8 h-8 text-accent" />
                       </div>
-                      <h4 className="text-2xl font-black text-slate-900 mb-4">Bulk Synchronization</h4>
+                      <h4 className="text-2xl font-black text-slate-900 mb-4">Portal Sync</h4>
                       <p className="text-slate-500 font-medium leading-relaxed">
                         Generate a single .ics file for your entire professional schedule. Sync with Google, Apple, or Outlook in one click.
                       </p>
@@ -441,7 +418,7 @@ export default function SchedilyDashboard(props: {
                </div>
             </section>
 
-            {/* SYNC TECH Branding */}
+            {/* SYNC TECH Agency Branding */}
             <section className="py-24 bg-primary text-primary-foreground relative overflow-hidden">
                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/5 rounded-full -mr-72 -mt-72 blur-[100px]" />
                <div className="container mx-auto px-4 relative z-10">
@@ -451,27 +428,27 @@ export default function SchedilyDashboard(props: {
                            <ShieldCheck className="w-4 h-4" /> Professional Integrity
                         </div>
                         <h3 className="text-4xl md:text-5xl font-black font-headline leading-tight tracking-tight">
-                           Developed by SYNC TECH Solutions
+                           Engineered by Sheraz Hussain
                         </h3>
                         <p className="text-primary-foreground/70 text-lg font-medium">
-                           Schedily is a premium coordination engine engineered for enterprise-grade performance and team synchronization.
+                           Schedily is a premium coordination portal built with the support and agency expertise of SYNC TECH Solutions.
                         </p>
                         <Link href="/about" className="inline-block pt-4">
                            <Button variant="secondary" size="lg" className="rounded-xl px-10 h-14 font-black">
-                              Learn More About Schedily
+                              Meet the Creators
                            </Button>
                         </Link>
                      </div>
-                     <div className="w-full md:w-1/3 p-8 bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/10">
-                        <div className="flex items-center gap-4 mb-8">
+                     <div className="w-full md:w-1/3 p-8 bg-white/10 backdrop-blur-xl rounded-[2.5rem] border border-white/10 text-center md:text-left">
+                        <div className="flex items-center gap-4 mb-8 justify-center md:justify-start">
                            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-black">SH</div>
                            <div>
                               <p className="font-black text-sm">Sheraz Hussain</p>
-                              <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">Lead Engineer, SYNC TECH</p>
+                              <p className="text-white/60 text-[10px] uppercase font-bold tracking-widest">Lead Developer</p>
                            </div>
                         </div>
                         <p className="text-primary-foreground/80 italic font-medium leading-relaxed">
-                           "Our goal was to bridge the gap between social interaction and professional productivity. Schedily is the result."
+                           "My primary effort was focused on bridging the gap between social interaction and professional productivity. Schedily is the result."
                         </p>
                      </div>
                   </div>
@@ -508,11 +485,11 @@ export default function SchedilyDashboard(props: {
                       </h1>
                     </Link>
                     <p className="text-slate-400 font-medium leading-relaxed">
-                      Professional social coordination engine engineered for modern team performance.
+                      Professional social coordination portal engineered by Sheraz Hussain.
                     </p>
                   </div>
                   <div className="space-y-4">
-                    <h5 className="font-black uppercase tracking-widest text-xs text-slate-500">Navigation</h5>
+                    <h5 className="font-black uppercase tracking-widest text-xs text-slate-500">Portal Nav</h5>
                     <ul className="space-y-2">
                       <li><Link href="/about" className="text-slate-300 hover:text-primary transition-colors font-bold">About Schedily</Link></li>
                       <li><Link href="/how-it-works" className="text-slate-300 hover:text-primary transition-colors font-bold">How It Works</Link></li>
@@ -520,16 +497,15 @@ export default function SchedilyDashboard(props: {
                     </ul>
                   </div>
                   <div className="space-y-4">
-                    <h5 className="font-black uppercase tracking-widest text-xs text-slate-500">Legal & Support</h5>
+                    <h5 className="font-black uppercase tracking-widest text-xs text-slate-500">Agency & Credits</h5>
                     <ul className="space-y-2">
-                      <li><Link href="#" className="text-slate-300 hover:text-primary transition-colors font-bold">Privacy Policy</Link></li>
-                      <li><Link href="#" className="text-slate-300 hover:text-primary transition-colors font-bold">Terms of Service</Link></li>
-                      <li><Link href="#" className="text-slate-300 hover:text-primary transition-colors font-bold">Support Hub</Link></li>
+                      <li className="text-slate-400 text-xs">Developed by <strong>Sheraz Hussain</strong></li>
+                      <li className="text-slate-400 text-xs">Agency: <strong>SYNC TECH Solutions</strong></li>
                     </ul>
                   </div>
                 </div>
                 <div className="pt-12 border-t border-slate-800 text-center text-slate-500 text-sm font-bold uppercase tracking-widest">
-                  © {year} SYNC TECH Solutions. Engineered in Dublin, Ireland.
+                  © {year} Schedily Hub. Engineered in Dublin, Ireland.
                 </div>
               </div>
             </footer>
@@ -615,7 +591,7 @@ export default function SchedilyDashboard(props: {
               {isMeetingsLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 gap-4">
                   <Loader2 className="w-12 h-12 animate-spin text-primary/40" />
-                  <p className="text-slate-400 font-bold">Syncing Team Hub...</p>
+                  <p className="text-slate-400 font-bold">Syncing Schedily Hub...</p>
                 </div>
               ) : activeSchedule.length > 0 ? (
                 activeSchedule.map((meeting) => (
@@ -637,7 +613,7 @@ export default function SchedilyDashboard(props: {
                   </div>
                   <h3 className="text-3xl font-black text-slate-900 mb-4">Start Your Team Schedule</h3>
                   <p className="text-slate-500 mt-2 max-w-sm mx-auto text-lg">
-                    Build professional groups to synchronize shifts and meetings.
+                    Build professional groups on the Schedily portal to synchronize shifts and meetings.
                   </p>
                   <div className="mt-10 flex gap-4 justify-center">
                     <Link href="/groups">

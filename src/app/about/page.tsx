@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -12,7 +13,9 @@ import {
   Users, 
   Lock,
   Globe,
-  Star
+  Star,
+  Award,
+  Heart
 } from "lucide-react";
 
 export default function AboutPage() {
@@ -30,7 +33,7 @@ export default function AboutPage() {
           </Link>
           <Link href="/">
             <Button variant="ghost" className="font-bold text-slate-600">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Hub
+              <ArrowLeft className="w-4 h-4 mr-2" /> Schedily Hub
             </Button>
           </Link>
         </div>
@@ -62,28 +65,32 @@ export default function AboutPage() {
             </div>
             <div className="space-y-6">
               <div className="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-accent border border-slate-100">
-                <ShieldCheck className="w-7 h-7" />
+                <Award className="w-7 h-7" />
               </div>
-              <h3 className="text-3xl font-black text-slate-900">Security by Design</h3>
+              <h3 className="text-3xl font-black text-slate-900">The Creators</h3>
               <p className="text-slate-600 font-medium leading-relaxed">
-                Engineered by SYNC TECH Solutions, Schedily treats your coordination data with enterprise-grade respect. Role-based access control ensures that sensitive shift data stays within authorized circles.
+                Schedily is the result of dedicated engineering by <strong>Sheraz Hussain</strong>, who led the effort to build this high-performance portal. <strong>SYNC TECH Solutions</strong> acted as the supporting agency to bring this transformative idea to life.
               </p>
             </div>
           </div>
 
-          <section className="bg-primary text-primary-foreground p-12 md:p-20 rounded-[3.5rem] relative overflow-hidden mb-24">
+          <section className="bg-primary text-primary-foreground p-12 md:p-20 rounded-[3.5rem] relative overflow-hidden mb-24 shadow-2xl shadow-primary/20">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-32 -mt-32 blur-[100px]" />
             <div className="relative z-10 space-y-8">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center font-black text-xl">SH</div>
+                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center font-black text-xl border border-white/20">SH</div>
                 <div>
                   <h4 className="text-xl font-black">Sheraz Hussain</h4>
-                  <p className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Lead Engineer, SYNC TECH Solutions</p>
+                  <p className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Lead Developer & Visionary</p>
                 </div>
               </div>
               <blockquote className="text-2xl md:text-4xl font-black font-headline leading-tight italic">
-                "Schedily isn't just a calendar; it's a social network for productivity. We built it to handle the speed of modern business, specifically for teams in Dublin and beyond who need real-time synchronization."
+                "Schedily isn't just a calendar; it's a social network for productivity. I put my primary effort into ensuring it handles the speed of modern business, specifically for teams who need real-time synchronization."
               </blockquote>
+              <div className="flex items-center gap-2 pt-4 border-t border-white/10">
+                <Heart className="w-4 h-4 text-rose-400 fill-current" />
+                <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Powered by SYNC TECH Solutions Agency</p>
+              </div>
             </div>
           </section>
 
@@ -119,7 +126,7 @@ export default function AboutPage() {
       <footer className="py-20 bg-slate-900 text-white border-t">
         <div className="container mx-auto px-4 text-center">
           <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">
-            © 2025 SYNC TECH Solutions. Developed by Sheraz Hussain.
+            © 2025 Schedily. Engineered by Sheraz Hussain. Agency support by SYNC TECH Solutions.
           </p>
         </div>
       </footer>

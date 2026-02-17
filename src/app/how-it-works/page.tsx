@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -17,8 +18,8 @@ import {
 export default function HowItWorksPage() {
   const steps = [
     {
-      title: "Join the Network",
-      description: "Create your professional identity. Schedily acts as your coordination hub, searchable by colleagues within your organization.",
+      title: "Join the Hub",
+      description: "Create your professional identity. Schedily acts as your coordination portal, searchable by colleagues within your organization.",
       icon: <UserPlus className="w-10 h-10 text-primary" />,
       tag: "STEP 01"
     },
@@ -36,7 +37,7 @@ export default function HowItWorksPage() {
     },
     {
       title: "Universal Sync",
-      description: "One-click export of your entire professional schedule to your native device calendar (ICS / Google / Outlook).",
+      description: "One-click export of your entire professional schedule from the Schedily portal to your native device calendar.",
       icon: <CalendarDays className="w-10 h-10 text-amber-500" />,
       tag: "STEP 04"
     }
@@ -56,7 +57,7 @@ export default function HowItWorksPage() {
           </Link>
           <Link href="/">
             <Button variant="ghost" className="font-bold text-slate-600">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Hub
+              <ArrowLeft className="w-4 h-4 mr-2" /> Schedily Hub
             </Button>
           </Link>
         </div>
@@ -73,7 +74,7 @@ export default function HowItWorksPage() {
               <span className="text-primary">Syncs Your Life.</span>
             </h2>
             <p className="text-slate-500 text-xl font-medium leading-relaxed">
-              We've engineered a four-stage process to eliminate scheduling conflicts and maximize team performance.
+              We've engineered a four-stage process to eliminate scheduling conflicts and maximize team performance through the Schedily Portal.
             </p>
           </div>
 
@@ -109,7 +110,7 @@ export default function HowItWorksPage() {
               </Link>
               <Link href="/about">
                 <Button variant="ghost" className="h-20 px-10 rounded-[2rem] text-xl font-black hover:bg-white/10 text-white">
-                  About the Engineers <ArrowRight className="w-5 h-5 ml-2" />
+                  About Schedily <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
             </div>
@@ -120,7 +121,7 @@ export default function HowItWorksPage() {
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                <span className="font-bold text-slate-400">No Credit Card</span>
+                <span className="font-bold text-slate-400">Professional Privacy</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -134,7 +135,7 @@ export default function HowItWorksPage() {
       <footer className="py-20 border-t bg-slate-50">
         <div className="container mx-auto px-4 text-center space-y-6">
           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
-            © 2025 SYNC TECH Solutions. All rights reserved.
+            © 2025 Schedily Hub. Developed by Sheraz Hussain for SYNC TECH Solutions.
           </p>
         </div>
       </footer>

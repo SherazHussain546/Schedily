@@ -159,7 +159,7 @@ export default function LoginPage(props: {
             Schedily
           </h1>
         </Link>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Professional Sync Hub</h2>
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Professional Portal</h2>
         <p className="text-slate-500 mt-2 font-medium">Coordinate, Tag, and Dispatch with ease.</p>
       </div>
 
@@ -168,13 +168,13 @@ export default function LoginPage(props: {
           <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-slate-100 rounded-2xl p-1 h-14">
               <TabsTrigger value="login" className="rounded-xl font-black text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">LOGIN</TabsTrigger>
-              <TabsTrigger value="signup" className="rounded-xl font-black text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">JOIN NETWORK</TabsTrigger>
+              <TabsTrigger value="signup" className="rounded-xl font-black text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm">JOIN HUB</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <div className="space-y-1 mb-6">
                 <CardTitle className="text-2xl font-black text-slate-900">Welcome Back</CardTitle>
-                <CardDescription className="font-medium">Access your professional schedule.</CardDescription>
+                <CardDescription className="font-medium">Access your professional Schedily portal.</CardDescription>
               </div>
               <form onSubmit={handleEmailSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -209,7 +209,7 @@ export default function LoginPage(props: {
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl font-black text-lg bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95" disabled={isLoading}>
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <LogIn className="w-5 h-5 mr-2" />}
-                  Sign In to Hub
+                  Sign In to Portal
                 </Button>
               </form>
             </TabsContent>
@@ -362,13 +362,13 @@ export default function LoginPage(props: {
         
         <CardFooter className="flex flex-col gap-6 p-8 bg-slate-50/50 border-t border-slate-100">
           <Link href="/" className="text-sm text-slate-500 hover:text-primary transition-colors flex items-center gap-2 font-bold">
-            <ArrowLeft className="w-4 h-4" /> Back to SYNC TECH Portal
+            <ArrowLeft className="w-4 h-4" /> Back to Schedily Portal
           </Link>
         </CardFooter>
       </Card>
       
       <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-        © {new Date().getFullYear()} Schedily Hub. Developed by SYNC TECH Solutions.
+        © {new Date().getFullYear()} Schedily Portal. Developed by Sheraz Hussain for SYNC TECH Solutions.
       </p>
       <Toaster />
     </div>
