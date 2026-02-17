@@ -8,7 +8,7 @@ import { CalendarPlus, Download, Sparkles, LayoutDashboard, Briefcase } from "lu
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 
-export default function MeetingMaestro() {
+export default function Schedily() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [year, setYear] = useState<number>(2025);
@@ -101,7 +101,7 @@ export default function MeetingMaestro() {
               <Sparkles className="text-primary-foreground w-6 h-6" />
             </div>
             <h1 className="text-xl font-bold font-headline tracking-tight text-primary">
-              Maestro
+              Schedily
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export default function MeetingMaestro() {
         )}
 
         <div className="mt-20 pt-10 border-t text-center text-sm text-muted-foreground">
-          <p>© {year} Meeting Maestro. Irish Eircode and Virtual Link ready.</p>
+          <p>© {year} Schedily. Irish Eircode and Virtual Link ready.</p>
           <p className="mt-2">
             Built by <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">SYNC TECH Solutions</a>
           </p>

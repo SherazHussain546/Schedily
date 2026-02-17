@@ -100,7 +100,7 @@ export function generateICSContent(meetings: Meeting[]): string {
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Meeting Maestro//EN',
+    'PRODID:-//Schedily//EN',
     ...events,
     'END:VCALENDAR'
   ].join('\r\n');
