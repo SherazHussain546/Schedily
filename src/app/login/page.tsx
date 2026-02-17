@@ -37,7 +37,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function LoginPage(props: {
   params: Promise<any>;
@@ -59,20 +58,16 @@ export default function LoginPage(props: {
   const [position, setPosition] = useState("Normal Account");
   const [organization, setOrganization] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [signupStep, setSignupStep] = useState(1);
 
-  // Determine initial tab from search params
   const initialTab = searchParams?.tab === "signup" ? "signup" : "login";
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user && !isUserLoading) {
       router.push("/");
     }
   }, [user, isUserLoading, router]);
 
-  // Listen for authentication errors
   useEffect(() => {
     const handleAuthError = (err: { code: string; message: string }) => {
       setIsLoading(false);
@@ -94,22 +89,14 @@ export default function LoginPage(props: {
     initiateEmailSignIn(auth, email, password);
   };
 
-  const checkUsernameUniqueness = async (name: string) => {
-    if (!db) return true;
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("displayName", "==", name.trim()));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.empty;
-  };
-
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (signupStep < 3) {
-      await nextStep();
+      nextStep();
       return;
     }
 
-    if (!email || !password || !username || !firstName || !lastName || !organization) {
+    if (!email || !password || !username || !firstName || !lastName || !organization || !db) {
       toast({
         variant: "destructive",
         title: "Missing Fields",
@@ -119,20 +106,6 @@ export default function LoginPage(props: {
     }
     
     setIsLoading(true);
-    
-    // Redundant check before final submission
-    const isUnique = await checkUsernameUniqueness(username);
-    if (!isUnique) {
-      setIsLoading(false);
-      setSignupStep(1);
-      toast({
-        variant: "destructive",
-        title: "Username Taken",
-        description: "That professional handle was claimed during your session. Please choose another.",
-      });
-      return;
-    }
-
     initiateEmailSignUp(auth, db, email, password, {
       username,
       firstName,
@@ -147,29 +120,11 @@ export default function LoginPage(props: {
     initiateAnonymousSignIn(auth);
   };
 
-  const nextStep = async () => {
+  const nextStep = () => {
     if (signupStep === 1) {
       if (!firstName || !lastName || !username) {
         toast({ variant: "destructive", title: "Wait!", description: "Tell us who you are first." });
         return;
-      }
-
-      setIsCheckingUsername(true);
-      try {
-        const isUnique = await checkUsernameUniqueness(username);
-        if (!isUnique) {
-          toast({
-            variant: "destructive",
-            title: "Handle Already Taken",
-            description: `@${username} is already active in the network. Please pick a unique handle.`,
-          });
-          return;
-        }
-      } catch (err) {
-        toast({ variant: "destructive", title: "Sync Error", description: "Failed to verify identity. Try again." });
-        return;
-      } finally {
-        setIsCheckingUsername(false);
       }
     }
 
@@ -266,7 +221,7 @@ export default function LoginPage(props: {
                     <CardTitle className="text-2xl font-black text-slate-900">Join Schedily</CardTitle>
                     <CardDescription className="font-medium">Step {signupStep} of 3: Professional Onboarding</CardDescription>
                   </div>
-                  <Badge className="bg-primary/5 text-primary border-primary/10 font-black">STEP {signupStep}</Badge>
+                  <div className="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold bg-primary/5 text-primary border-primary/10 font-black">STEP {signupStep}</div>
                 </div>
                 <Progress value={progressValue} className="h-2 rounded-full bg-slate-100" />
               </div>
@@ -378,9 +333,9 @@ export default function LoginPage(props: {
                       <ChevronLeft className="w-5 h-5" />
                     </Button>
                   )}
-                  <Button type="submit" className="flex-1 h-14 rounded-2xl font-black text-lg bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95" disabled={isLoading || isCheckingUsername}>
+                  <Button type="submit" className="flex-1 h-14 rounded-2xl font-black text-lg bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95" disabled={isLoading}>
                     {signupStep < 3 ? (
-                      isCheckingUsername ? <><Loader2 className="w-5 h-5 animate-spin mr-2" /> Validating...</> : <>Continue <ChevronRight className="w-5 h-5 ml-2" /></>
+                      <>Continue <ChevronRight className="w-5 h-5 ml-2" /></>
                     ) : (
                       isLoading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <><CheckCircle2 className="w-5 h-5 mr-2" /> Complete Registration</>
                     )}
@@ -416,14 +371,6 @@ export default function LoginPage(props: {
         © {new Date().getFullYear()} Schedily Hub. Developed by SYNC TECH Solutions.
       </p>
       <Toaster />
-    </div>
-  );
-}
-
-function Badge({ children, className }: { children: React.ReactNode, className?: string }) {
-  return (
-    <div className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}>
-      {children}
     </div>
   );
 }
