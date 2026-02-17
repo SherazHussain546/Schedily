@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/tabs";
 import { Sparkles, Mail, Lock, LogIn, UserPlus, Loader2, ArrowLeft } from "lucide-react";
-import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp, initiateAnonymousSignIn } from "@/firebase";
+import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp, initiateAnonymousSignIn, errorEmitter } from "@/firebase";
+import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 
@@ -21,18 +22,32 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already logged in
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && !isUserLoading) {
       router.push("/");
     }
   }, [user, isUserLoading, router]);
+
+  // Listen for authentication errors
+  useEffect(() => {
+    const handleAuthError = (err: { code: string; message: string }) => {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: err.message || "An unexpected error occurred. Please check your credentials.",
+      });
+    };
+
+    errorEmitter.on('auth-error', handleAuthError);
+    return () => errorEmitter.off('auth-error', handleAuthError);
+  }, []);
 
   const handleEmailSignIn = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
     setIsLoading(true);
     initiateEmailSignIn(auth, email, password);
-    // Loading state will be cleared by the auth state observer in the background
   };
 
   const handleEmailSignUp = (e: React.FormEvent) => {
