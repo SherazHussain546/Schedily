@@ -48,7 +48,10 @@
         },
         "type": {
           "type": "string",
-          "enum": ["meeting", "shift"]
+          "enum": [
+            "meeting",
+            "shift"
+          ]
         },
         "employeeName": {
           "type": "string"
