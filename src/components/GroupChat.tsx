@@ -13,7 +13,19 @@ import { collection, query, orderBy, serverTimestamp, limit } from 'firebase/fir
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Loader2, Paperclip, X, Image as ImageIcon, Film, Download } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { 
+  MessageSquare, 
+  Send, 
+  Loader2, 
+  Paperclip, 
+  X, 
+  Image as ImageIcon, 
+  Film, 
+  Download,
+  Play,
+  Maximize2
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface GroupChatProps {
@@ -27,6 +39,8 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
   const [message, setMessage] = useState('');
   const [mediaPreview, setMediaPreview] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [fullScreenMedia, setFullScreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -134,22 +148,38 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
                       : "bg-white text-slate-900 rounded-tl-none border border-slate-100"
                   )}>
                     {msg.mediaUrl && (
-                      <div className="relative rounded-xl overflow-hidden bg-black/5 aspect-video w-full max-w-sm">
+                      <div 
+                        className="relative rounded-xl overflow-hidden bg-black/5 aspect-video w-full max-w-sm cursor-zoom-in group/media"
+                        onClick={() => setFullScreenMedia({ url: msg.mediaUrl, type: msg.mediaType })}
+                      >
                         {msg.mediaType === 'image' ? (
                           <img 
                             src={msg.mediaUrl} 
                             alt="Shared media" 
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform group-hover/media:scale-105"
                           />
                         ) : (
-                          <video 
-                            src={msg.mediaUrl} 
-                            className="w-full h-full object-cover"
-                          />
+                          <div className="relative w-full h-full">
+                            <video 
+                              src={msg.mediaUrl} 
+                              className="w-full h-full object-cover transition-transform group-hover/media:scale-105"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/media:bg-black/30 transition-all">
+                              <Play className="w-12 h-12 text-white opacity-80" />
+                            </div>
+                          </div>
                         )}
+                        
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/media:bg-black/10 transition-all">
+                           <Maximize2 className="w-8 h-8 text-white opacity-0 group-hover/media:opacity-100 transition-opacity" />
+                        </div>
+
                         <button 
-                          onClick={() => downloadMedia(msg.mediaUrl, `schedily-media-${msg.id}`)}
-                          className="absolute top-2 right-2 p-2 bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadMedia(msg.mediaUrl, `schedily-media-${msg.id}`);
+                          }}
+                          className="absolute top-2 right-2 p-2 bg-black/40 text-white rounded-full opacity-0 group-hover/media:opacity-100 transition-opacity hover:bg-black/60 z-10"
                           title="Download Media"
                         >
                           <Download className="w-4 h-4" />
@@ -235,6 +265,57 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
           </Button>
         </form>
       </div>
+
+      {/* Full Screen Media Preview Dialog */}
+      <Dialog open={!!fullScreenMedia} onOpenChange={() => setFullScreenMedia(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 overflow-hidden border-none bg-black/95 rounded-none sm:rounded-[2.5rem] h-[80vh] flex flex-col">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Media Coordination Preview</DialogTitle>
+          </DialogHeader>
+          <div className="relative flex-1 flex items-center justify-center group/preview overflow-hidden bg-black">
+            {fullScreenMedia?.type === 'image' ? (
+              <img 
+                src={fullScreenMedia.url} 
+                alt="Enlarged media" 
+                className="max-w-full max-h-full object-contain animate-in zoom-in-95 duration-300" 
+              />
+            ) : (
+              <video 
+                src={fullScreenMedia?.url} 
+                controls 
+                autoPlay 
+                className="max-w-full max-h-full object-contain animate-in zoom-in-95 duration-300"
+              />
+            )}
+            
+            <div className="absolute top-4 right-4 flex gap-2">
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                className="rounded-full bg-white/10 text-white hover:bg-white/20 border-none"
+                onClick={() => downloadMedia(fullScreenMedia!.url, 'schedily-coordination-media')}
+              >
+                <Download className="w-5 h-5" />
+              </Button>
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                className="rounded-full bg-white/10 text-white hover:bg-white/20 border-none"
+                onClick={() => setFullScreenMedia(null)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+          <div className="p-4 bg-white/5 backdrop-blur-sm border-t border-white/10 flex items-center justify-between text-white/60 text-xs font-bold uppercase tracking-widest px-8">
+            <div className="flex items-center gap-2">
+              {fullScreenMedia?.type === 'image' ? <ImageIcon className="w-4 h-4" /> : <Film className="w-4 h-4" />}
+              {fullScreenMedia?.type === 'image' ? 'Professional Image' : 'Team Briefing Video'}
+            </div>
+            <span>Schedily Social Hub</span>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
