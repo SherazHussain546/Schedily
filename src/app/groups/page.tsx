@@ -14,8 +14,7 @@ import {
   Sparkles,
   Trash2,
   UserPlus,
-  Search,
-  Check
+  Search
 } from "lucide-react";
 import { 
   useUser, 
@@ -23,14 +22,13 @@ import {
   useCollection, 
   useMemoFirebase,
   setDocumentNonBlocking,
-  deleteDocumentNonBlocking,
-  addDocumentNonBlocking
+  deleteDocumentNonBlocking
 } from "@/firebase";
 import { collection, query, where, getDocs, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
 export default function GroupsPage(props: {
@@ -48,22 +46,19 @@ export default function GroupsPage(props: {
   const [isCreating, setIsCreating] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
-  // Fetch groups where user is a member
-  // Note: For simplicity in this demo, we'll list all groups if they were small, 
-  // but better would be a subcollection or a 'memberOf' field.
-  // Here we'll fetch all groups for simplicity and filter client side for MVP
+  // Fetch groups to display in the management hub
   const groupsQuery = useMemoFirebase(() => {
-    if (!db) return null;
+    if (!db || !user) return null;
+    // For MVP, we'll list groups created by the user or all discoverable groups
+    // In a scaled app, we'd query by membership via collection group or user profile field
     return collection(db, "groups");
-  }, [db]);
+  }, [db, user]);
 
   const { data: allGroups, isLoading: isGroupsLoading } = useCollection(groupsQuery);
 
-  // Filter groups where current user is a member
-  // In a real app, you'd use a more complex query or a separate index
-  const myGroups = allGroups?.filter(g => true) || []; // Placeholder logic
+  // Filter groups where current user is the owner or (if we had the data) a member
+  const myGroups = allGroups?.filter(g => g.ownerId === user?.uid) || [];
 
   const createGroup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +101,9 @@ export default function GroupsPage(props: {
       const snap = await getDocs(q);
       const results = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setSearchResults(results);
+      if (results.length === 0) {
+        toast({ title: "User not found", description: "Search for an exact professional username." });
+      }
     } catch (error) {
       toast({ variant: "destructive", title: "Search failed" });
     }
@@ -119,7 +117,7 @@ export default function GroupsPage(props: {
       displayName: targetUser.displayName,
       role: "member"
     });
-    toast({ title: "Member Added", description: `@${targetUser.displayName} joined the group.` });
+    toast({ title: "Member Added", description: `@${targetUser.displayName} added to group.` });
   };
 
   if (isUserLoading) {
@@ -140,11 +138,11 @@ export default function GroupsPage(props: {
       <div className="max-w-4xl mx-auto">
         <header className="flex items-center justify-between mb-12">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold">
-            <ArrowLeft className="w-4 h-4" /> Dashboard
+            <ArrowLeft className="w-4 h-4" /> Hub
           </Link>
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-primary" />
-            <h1 className="text-xl font-bold font-headline">Team Groups</h1>
+            <h1 className="text-xl font-bold font-headline">Team Management</h1>
           </div>
         </header>
 
@@ -152,22 +150,23 @@ export default function GroupsPage(props: {
           <div className="md:col-span-1 space-y-6">
             <Card className="shadow-lg border-none rounded-3xl">
               <CardHeader>
-                <CardTitle className="text-lg">New Team</CardTitle>
-                <CardDescription>Create a group for your department or project.</CardDescription>
+                <CardTitle className="text-lg">Start New Team</CardTitle>
+                <CardDescription>Coordinate an entire department or circle.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={createGroup} className="space-y-4">
                   <div className="space-y-2">
-                    <Label>Group Name</Label>
+                    <Label>Department Name</Label>
                     <Input 
-                      placeholder="e.g. Sales Team" 
+                      placeholder="e.g. Dublin Tech Ops" 
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
+                      className="rounded-xl"
                     />
                   </div>
-                  <Button className="w-full rounded-xl" disabled={isCreating}>
+                  <Button className="w-full rounded-xl h-12 font-bold" disabled={isCreating}>
                     {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-                    Create Group
+                    Launch Group
                   </Button>
                 </form>
               </CardContent>
@@ -176,7 +175,7 @@ export default function GroupsPage(props: {
 
           <div className="md:col-span-2 space-y-6">
             <h3 className="text-xl font-black flex items-center gap-2 px-2">
-              <Sparkles className="w-5 h-5 text-amber-500" /> My Active Groups
+              <Sparkles className="w-5 h-5 text-amber-500" /> Managed Circles
             </h3>
             
             {isGroupsLoading ? (
@@ -194,20 +193,20 @@ export default function GroupsPage(props: {
                         </div>
                         <div>
                           <h4 className="font-bold text-lg text-slate-900">{group.name}</h4>
-                          <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Professional Circle</p>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-black">Group ID: {group.id.substring(0, 8)}</p>
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-2">
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="rounded-xl font-bold">
-                              <UserPlus className="w-4 h-4 mr-2" /> Add Members
+                            <Button variant="ghost" size="sm" className="rounded-xl font-bold text-primary hover:bg-primary/5">
+                              <UserPlus className="w-4 h-4 mr-2" /> Invite
                             </Button>
                           </DialogTrigger>
-                          <DialogContent>
+                          <DialogContent className="rounded-3xl">
                             <DialogHeader>
-                              <DialogTitle>Add Teammates to {group.name}</DialogTitle>
+                              <DialogTitle>Invite Teammate to {group.name}</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4 py-4">
                               <form onSubmit={handleUserSearch} className="flex gap-2">
@@ -215,14 +214,20 @@ export default function GroupsPage(props: {
                                   placeholder="Search by username..." 
                                   value={memberSearch}
                                   onChange={(e) => setMemberSearch(e.target.value)}
+                                  className="rounded-xl"
                                 />
-                                <Button type="submit"><Search className="w-4 h-4" /></Button>
+                                <Button type="submit" className="rounded-xl"><Search className="w-4 h-4" /></Button>
                               </form>
-                              <div className="space-y-2">
+                              <div className="space-y-2 max-h-[300px] overflow-auto">
                                 {searchResults.map(u => (
-                                  <div key={u.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                                    <span className="font-bold">@{u.displayName}</span>
-                                    <Button size="sm" onClick={() => addMember(group.id, u)}>Add</Button>
+                                  <div key={u.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-black text-primary border">
+                                        {u.displayName?.charAt(0).toUpperCase()}
+                                      </div>
+                                      <span className="font-bold text-sm">@{u.displayName}</span>
+                                    </div>
+                                    <Button size="sm" className="rounded-xl font-bold h-8" onClick={() => addMember(group.id, u)}>Add</Button>
                                   </div>
                                 ))}
                               </div>
@@ -234,8 +239,12 @@ export default function GroupsPage(props: {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => deleteDocumentNonBlocking(doc(db, "groups", group.id))}
-                            className="text-slate-300 hover:text-destructive"
+                            onClick={() => {
+                              if(confirm("Permanently delete this professional circle?")) {
+                                deleteDocumentNonBlocking(doc(db, "groups", group.id));
+                              }
+                            }}
+                            className="text-slate-300 hover:text-destructive rounded-xl"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -246,8 +255,8 @@ export default function GroupsPage(props: {
                 ))}
               </div>
             ) : (
-              <div className="py-20 text-center bg-white border border-dashed rounded-[3rem] text-slate-400">
-                You haven't joined any groups yet.
+              <div className="py-20 text-center bg-white border border-dashed rounded-[3rem] text-slate-400 font-medium">
+                You haven't launched any professional circles yet.
               </div>
             )}
           </div>
