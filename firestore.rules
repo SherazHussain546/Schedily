@@ -4,21 +4,21 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // 1. PUBLIC PROFILES
-    // Needed so managers can find employee IDs by searching for their username.
+    // Allows any authenticated user to find a colleague by username to deliver shifts.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 2. THE MAILBOX (Meetings)
-    match /users/{userId}/meetings/{meetingId} {
+    // 2. THE MEETINGS COLLECTION (Mailbox & Private Schedule)
+    // We use {document=**} to ensure 'list' operations (queries) are explicitly allowed for the owner.
+    match /users/{userId}/meetings/{document=**} {
       
-      // FULL ACCESS for the Owner of the schedule.
-      // This explicitly allows 'list' operations (queries) for the owner.
+      // MASTER KEY: The owner of the schedule can do everything (List, Get, Update, Delete)
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // DELIVERY SLOT: Any authenticated user can "drop off" a meeting/shift.
-      // They cannot see the folder contents, only add to it.
+      // DELIVERY SLOT: Any logged-in user can CREATE a new entry in someone else's folder.
+      // This is the "Push" mechanism. They cannot 'list' the folder or 'read' existing items.
       allow create: if request.auth != null;
     }
   }
