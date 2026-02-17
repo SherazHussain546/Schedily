@@ -3,20 +3,20 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // User Profile Rules
-    // Profiles are readable by authenticated users so they can find each other by username
+    // Profiles are readable by all authenticated users to allow finding managers/employees by username
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
 
-      // Meetings Subcollection
-      // Nested matches ensure that the {userId} variable is consistently applied.
+      // Meetings & Shifts Subcollection
+      // This rule explicitly allows the owner to GET and LIST (query) their own entries.
       match /meetings/{meetingId} {
-        // 1. Owner Access: If you are the owner of this path, you have full control.
-        // This explicitly covers 'list' (queries), 'get', and all 'write' operations.
+        // 1. Owner access: Full permissions for everything in their own path.
         allow read, write: if request.auth != null && request.auth.uid == userId;
         
-        // 2. Manager Delivery: Allow other users to "Push" a new meeting to this user.
-        // They can ONLY create; they cannot read existing entries or modify them.
+        // 2. Delivery access: Allows another user to "Push" a document to this collection.
+        // They can ONLY create; they cannot read or list existing meetings.
+        // They must provide their own UID as the senderId for accountability.
         allow create: if request.auth != null && 
           request.resource.data.senderId != null && 
           request.resource.data.senderId == request.auth.uid;
