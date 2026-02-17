@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Represents a user's profile information for discovery and networking.",
+      "description": "Represents a user's professional profile for discovery and networking.",
       "type": "object",
       "properties": {
         "id": {
@@ -17,7 +17,7 @@
         },
         "displayName": {
           "type": "string",
-          "description": "User's unique username."
+          "description": "Unique username used for tagging and delivery."
         },
         "bio": {
           "type": "string",
@@ -42,7 +42,7 @@
     },
     "Meeting": {
       "title": "Meeting",
-      "description": "Represents a shift or meeting entry.",
+      "description": "Represents a shift or meeting entry delivered to a user.",
       "type": "object",
       "properties": {
         "userId": {
@@ -102,12 +102,12 @@
     },
     "Connection": {
       "title": "Connection",
-      "description": "Represents a follow relationship between users.",
+      "description": "Represents a professional follow relationship.",
       "type": "object",
       "properties": {
         "userId": {
           "type": "string",
-          "description": "The user who is following."
+          "description": "The user following."
         },
         "targetId": {
           "type": "string",
@@ -134,19 +134,19 @@
       "schema": {
         "$ref": "#/backend/entities/UserProfile"
       },
-      "description": "User profile document."
+      "description": "Public user profile."
     },
     "/users/{userId}/meetings/{meetingId}": {
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "Personal and received schedule entries."
+      "description": "Private schedule feed and incoming requests."
     },
     "/users/{userId}/following/{followedUserId}": {
       "schema": {
         "$ref": "#/backend/entities/Connection"
       },
-      "description": "User networking connections."
+      "description": "User's professional network."
     }
   }
 }
