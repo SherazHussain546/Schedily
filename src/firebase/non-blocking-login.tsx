@@ -23,14 +23,20 @@ export function initiateEmailSignUp(
   db: Firestore, 
   email: string, 
   password: string, 
-  username: string
+  signupData: {
+    username: string;
+    firstName: string;
+    lastName: string;
+    position: string;
+    organization: string;
+  }
 ): void {
   createUserWithEmailAndPassword(authInstance, email, password)
     .then(async (userCredential) => {
       const user = userCredential.user;
       
       // Update Auth Profile
-      await updateProfile(user, { displayName: username });
+      await updateProfile(user, { displayName: signupData.username });
       
       // Create UserProfile document in Firestore
       const userRef = doc(db, 'users', user.uid);
@@ -38,7 +44,11 @@ export function initiateEmailSignUp(
       await setDoc(userRef, {
         id: user.uid,
         email: user.email,
-        displayName: username,
+        displayName: signupData.username,
+        firstName: signupData.firstName,
+        lastName: signupData.lastName,
+        position: signupData.position,
+        organization: signupData.organization,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
