@@ -2,20 +2,25 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. User Profiles
-    // Allows owners to manage their data and others to find them for the "Push" feature.
+    // Explicit, simple ownership rules.
+    // IDEA: If you own the path segment, you own the data.
+    
     match /users/{userId} {
+      // 1. Users have full control over their own profile document.
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow get: if request.auth != null;
-      allow list: if request.auth != null;
-    }
+      
+      // 2. Allow others to search for users (needed for the push-by-username feature).
+      allow get, list: if request.auth != null;
 
-    // 2. Meetings & Shifts
-    // Explicitly grants owners full access to their own subcollection.
-    // Explicitly grants managers (senders) create-only access for the "Push" model.
-    match /users/{userId}/meetings/{meetingId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+      // 3. Subcollection for Meetings/Shifts.
+      match /meetings/{meetingId} {
+        // OWNERS have absolute access to their own schedule (read, list, get, create, update, delete).
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // MANAGERS (SENDER) can only "Push" (Create) an entry.
+        // They cannot read, list, or modify what's already inside.
+        allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+      }
     }
   }
 }

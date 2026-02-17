@@ -118,11 +118,11 @@
       },
       "description": "User profile document."
     },
-    "/users/{userId}/meetings": {
+    "/users/{userId}/meetings/{meetingId}": {
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "Collection of user's individual schedule entries."
+      "description": "Individual schedule entry."
     }
   }
 }
