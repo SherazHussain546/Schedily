@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,10 +9,35 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Mail, User, Calendar, ArrowLeft, LogOut, Loader2, ShieldCheck, Edit2, Save, X, Info } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { 
+  Sparkles, 
+  Mail, 
+  User, 
+  Calendar, 
+  ArrowLeft, 
+  LogOut, 
+  Loader2, 
+  ShieldCheck, 
+  Edit2, 
+  Save, 
+  X, 
+  Info,
+  UserX
+} from "lucide-react";
 import { useUser, useAuth, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
-import { signOut, updateProfile } from "firebase/auth";
-import { doc, serverTimestamp } from "firebase/firestore";
+import { signOut, updateProfile, deleteUser } from "firebase/auth";
+import { doc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -25,6 +51,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch full profile from Firestore to get bio and other details
   const profileRef = useMemoFirebase(() => {
@@ -54,6 +81,43 @@ export default function ProfilePage() {
         title: "Error",
         description: "Failed to sign out.",
       });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || !db) return;
+    
+    setIsDeleting(true);
+    try {
+      // 1. Delete Firestore Profile Document
+      const userRef = doc(db, "users", user.uid);
+      await deleteDoc(userRef);
+
+      // 2. Delete Auth User
+      await deleteUser(user);
+
+      toast({
+        title: "Account Deleted",
+        description: "Your professional profile has been removed.",
+      });
+      router.push("/login");
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === 'auth/requires-recent-login') {
+        toast({
+          variant: "destructive",
+          title: "Sensitive Action",
+          description: "Please log out and log back in to verify your identity before deleting your account.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Deletion Failed",
+          description: error.message || "Could not delete your account. Please try again later.",
+        });
+      }
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -205,15 +269,43 @@ export default function ProfilePage() {
             </div>
           </CardContent>
 
-          <CardFooter className="flex justify-between items-center p-8 bg-slate-50 border-t">
+          <CardFooter className="flex flex-wrap gap-4 justify-between items-center p-8 bg-slate-50 border-t">
             {!isEditing ? (
               <>
-                <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl font-bold px-6">
-                  Back to Hub
-                </Button>
-                <Button variant="destructive" onClick={handleSignOut} className="rounded-xl font-bold px-6 flex items-center gap-2">
-                  <LogOut className="w-4 h-4" /> Sign Out
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl font-bold px-6">
+                    Back to Hub
+                  </Button>
+                  <Button variant="outline" onClick={handleSignOut} className="rounded-xl font-bold px-6 flex items-center gap-2">
+                    <LogOut className="w-4 h-4" /> Sign Out
+                  </Button>
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="rounded-xl font-bold px-6 flex items-center gap-2">
+                      <UserX className="w-4 h-4" /> Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-3xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your professional profile and all associated data from Schedily.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl font-bold">Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDeleteAccount}
+                        className="rounded-xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Yes, Delete My Account"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </>
             ) : (
               <div className="flex gap-3 w-full justify-end">
@@ -247,7 +339,7 @@ export default function ProfilePage() {
             Professional Identity Secure
           </div>
           <p className="text-xs text-slate-400 max-w-xs leading-tight">
-            Changes to your display name will update your tagging identifier across the network.
+            Deleting your account will remove your identity and availability from the professional network.
           </p>
         </div>
       </div>
