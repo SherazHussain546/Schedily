@@ -7,21 +7,23 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     match /users/{userId} {
-      // Users can see other profiles to enable the sharing/lookup feature
+      // Allow profile reading for search/lookup functionality
       allow read: if isSignedIn();
-      // Only the user can create or update their own profile
-      allow create, update: if isSignedIn() && request.auth.uid == userId;
+      
+      // Only the user can manage their own profile metadata
+      allow create, update: if isOwner(userId);
 
       match /meetings/{meetingId} {
-        // Owners have full access to their own meetings (get and list)
-        allow read: if isSignedIn() && request.auth.uid == userId;
+        // Owners have full access to their own meetings collection and documents
+        allow read, update, delete: if isOwner(userId);
         
-        // Owners can update or delete their entries
-        allow update, delete: if isSignedIn() && request.auth.uid == userId;
-        
-        // Allow creating a meeting in another user's collection if it's a shared "invite"
-        // senderId must match the authenticated user's UID to prevent spoofing
+        // Allow creation if the user is the owner OR if another user is sending an invite
+        // We verify senderId matches the actual authenticated user to prevent spoofing
         allow create: if isSignedIn() && (
           request.auth.uid == userId || 
           (request.resource.data.senderId == request.auth.uid)
