@@ -3,30 +3,29 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // User Profiles
-    // Allows any signed-in user to read profiles (needed for username search)
+    // Allows any signed-in user to read profiles (needed for username search).
     // Only the owner can write to their own profile.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
-    }
 
-    // Meetings and Shifts Subcollection
-    // Using a flat path match to ensure explicit permission evaluation for list operations.
-    match /users/{userId}/meetings/{meetingId} {
-      // The owner of the parent user document has full read/write access.
-      // 'read' covers both individual document 'get' and collection 'list' operations.
-      allow read: if request.auth != null && request.auth.uid == userId;
-      
-      // Ownership check for updates and deletions.
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
-      
-      // Creation permissions:
-      // 1. The owner can create their own entries.
-      // 2. Any user can create an entry in another user's collection if they identify as the 'sender'.
-      allow create: if request.auth != null && (
-        request.auth.uid == userId || 
-        request.resource.data.senderId == request.auth.uid
-      );
+      // Meetings and Shifts Subcollection
+      // Explicitly match the subcollection to ensure 'list' operations are permitted for the owner.
+      match /meetings/{meetingId} {
+        // The owner has full read access (get and list).
+        allow read: if request.auth != null && request.auth.uid == userId;
+        
+        // Ownership check for updates and deletions.
+        allow update, delete: if request.auth != null && request.auth.uid == userId;
+        
+        // Creation permissions:
+        // 1. The owner can create their own entries.
+        // 2. Any user can create an entry in another user's collection if they are sharing (identifying as sender).
+        allow create: if request.auth != null && (
+          request.auth.uid == userId || 
+          request.resource.data.senderId == request.auth.uid
+        );
+      }
     }
   }
 }
