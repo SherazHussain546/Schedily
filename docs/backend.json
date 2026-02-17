@@ -6,215 +6,110 @@
       "description": "Represents a professional on the network, searchable by others for coordination.",
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier (Firebase UID)."
-        },
-        "email": {
-          "type": "string",
-          "description": "User's professional email.",
-          "format": "email"
-        },
-        "displayName": {
-          "type": "string",
-          "description": "Unique username used for tagging and shift delivery."
-        },
-        "bio": {
-          "type": "string",
-          "description": "Professional summary or role."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "bio": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "email",
-        "displayName",
-        "createdAt",
-        "updatedAt"
-      ]
+      "required": ["id", "email", "displayName", "createdAt", "updatedAt"]
     },
     "Meeting": {
       "title": "Meeting",
       "description": "A shift or coordination entry pushed to a professional's schedule.",
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string",
-          "description": "Owner of the schedule."
-        },
-        "title": {
-          "type": "string",
-          "description": "Task or meeting name."
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "meeting",
-            "shift"
-          ]
-        },
-        "status": {
-          "type": "string",
-          "enum": [
-            "pending",
-            "accepted"
-          ]
-        },
-        "date": {
-          "type": "string",
-          "format": "date"
-        },
-        "startTime": {
-          "type": "string"
-        },
-        "endTime": {
-          "type": "string"
-        },
-        "location": {
-          "type": "string"
-        },
-        "senderId": {
-          "type": "string",
-          "description": "Who dispatched this shift."
-        },
-        "senderName": {
-          "type": "string",
-          "description": "Name of the dispatcher."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["meeting", "shift"] },
+        "status": { "type": "string", "enum": ["pending", "accepted"] },
+        "date": { "type": "string", "format": "date" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "location": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "description": { "type": "string" },
+        "attachments": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "userId",
-        "title",
-        "type",
-        "date",
-        "startTime",
-        "endTime",
-        "createdAt"
-      ]
+      "required": ["userId", "title", "type", "date", "startTime", "endTime", "createdAt"]
     },
     "Group": {
       "title": "Group",
       "description": "A professional team or department group.",
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "ownerId": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "name",
-        "ownerId"
-      ]
+      "required": ["name", "ownerId"]
     },
     "ChatMessage": {
       "title": "ChatMessage",
-      "description": "A message sent within a group chat, supporting text and social media (images/videos).",
+      "description": "A message sent within a group chat, supporting text and social media.",
       "type": "object",
       "properties": {
         "senderId": { "type": "string" },
         "senderName": { "type": "string" },
         "text": { "type": "string" },
-        "mediaUrl": { "type": "string", "description": "Optional URL for shared image or video." },
-        "mediaType": { "type": "string", "enum": ["image", "video"], "description": "Type of media attached." },
+        "mediaUrl": { "type": "string" },
+        "mediaType": { "type": "string", "enum": ["image", "video"] },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["senderId", "senderName", "createdAt"]
     },
-    "Connection": {
-      "title": "Connection",
-      "description": "A professional following relationship.",
+    "Membership": {
+      "title": "Membership",
+      "description": "Inverse tracking for groups a user has joined.",
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string"
-        },
-        "targetId": {
-          "type": "string"
-        },
-        "targetName": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time"
-        }
+        "groupId": { "type": "string" },
+        "groupName": { "type": "string" },
+        "role": { "type": "string" },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Follower": {
+      "title": "Follower",
+      "description": "Tracking for users who follow a professional profile.",
+      "type": "object",
+      "properties": {
+        "followerId": { "type": "string" },
+        "followerName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
       }
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "anonymous"]
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": {
-        "$ref": "#/backend/entities/UserProfile"
-      },
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
       "description": "Public professional profile."
     },
     "/users/{userId}/meetings/{meetingId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Meeting"
-      },
-      "description": "Personal schedule feed and incoming requests."
+      "schema": { "$ref": "#/backend/entities/Meeting" },
+      "description": "Personal schedule feed."
     },
-    "/users/{userId}/following/{followedUserId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Connection"
-      },
-      "description": "List of colleagues followed for coordination."
+    "/users/{userId}/memberships/{groupId}": {
+      "schema": { "$ref": "#/backend/entities/Membership" },
+      "description": "List of groups the user is involved in."
+    },
+    "/users/{userId}/followers/{followerId}": {
+      "schema": { "$ref": "#/backend/entities/Follower" },
+      "description": "Network of colleagues following this user."
     },
     "/groups/{groupId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Group"
-      },
+      "schema": { "$ref": "#/backend/entities/Group" },
       "description": "Team group metadata."
     },
-    "/groups/{groupId}/members/{userId}": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "userId": { "type": "string" },
-          "displayName": { "type": "string" },
-          "role": { "type": "string", "enum": ["owner", "member"] }
-        }
-      },
-      "description": "Group membership list."
-    },
-    "/groups/{groupId}/meetings/{meetingId}": {
-      "schema": {
-        "$ref": "#/backend/entities/Meeting"
-      },
-      "description": "Shared group schedule."
-    },
     "/groups/{groupId}/messages/{messageId}": {
-      "schema": {
-        "$ref": "#/backend/entities/ChatMessage"
-      },
-      "description": "Real-time group chat messages."
+      "schema": { "$ref": "#/backend/entities/ChatMessage" },
+      "description": "Real-time group chat."
     }
   }
 }
