@@ -4,78 +4,106 @@ import React, { useState, useEffect } from "react";
 import { Meeting, generateICSContent, downloadICS, ItemType } from "@/lib/calendar-utils";
 import { MeetingCard } from "@/components/MeetingCard";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, Download, Sparkles, LayoutDashboard, Briefcase } from "lucide-react";
+import { CalendarPlus, Download, Sparkles, LayoutDashboard, Briefcase, LogIn, Loader2 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
+import { 
+  useUser, 
+  useFirestore, 
+  useAuth, 
+  useCollection, 
+  useMemoFirebase,
+  addDocumentNonBlocking,
+  updateDocumentNonBlocking,
+  deleteDocumentNonBlocking,
+  initiateAnonymousSignIn
+} from "@/firebase";
+import { collection, doc, query, orderBy, serverTimestamp } from "firebase/firestore";
 
 export default function Schedily() {
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const db = useFirestore();
   const [year, setYear] = useState<number>(2025);
 
   useEffect(() => {
-    setHydrated(true);
     setYear(new Date().getFullYear());
-    const today = new Date().toISOString().split('T')[0];
-    setMeetings([
-      {
-        id: crypto.randomUUID(),
-        title: "",
-        type: 'meeting',
-        date: today,
-        startTime: "09:00",
-        endTime: "10:00",
-        location: "",
-        emails: "",
-        description: "",
-        attachments: ""
-      },
-    ]);
   }, []);
 
+  // Memoize the query for the user's meetings
+  const meetingsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return query(
+      collection(db, "users", user.uid, "meetings"),
+      orderBy("createdAt", "desc")
+    );
+  }, [db, user]);
+
+  const { data: meetings, isLoading: isMeetingsLoading } = useCollection<Meeting>(meetingsQuery);
+
+  const handleSignIn = () => {
+    initiateAnonymousSignIn(auth);
+  };
+
   const addItem = (type: ItemType) => {
+    if (!user || !db) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to save your schedule.",
+      });
+      return;
+    }
+
     const today = new Date().toISOString().split('T')[0];
-    setMeetings([
-      ...meetings,
-      {
-        id: crypto.randomUUID(),
-        title: "",
-        type,
-        employeeName: "",
-        emails: "",
-        description: "",
-        attachments: "",
-        date: today,
-        startTime: "09:00",
-        endTime: "10:00",
-        location: "",
-      },
-    ]);
+    const meetingRef = collection(db, "users", user.uid, "meetings");
+    
+    addDocumentNonBlocking(meetingRef, {
+      title: "",
+      type,
+      employeeName: "",
+      emails: "",
+      description: "",
+      attachments: "",
+      date: today,
+      startTime: "09:00",
+      endTime: "10:00",
+      location: "",
+      userId: user.uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
     toast({
       title: type === 'shift' ? "Shift Added" : "Meeting Added",
-      description: `A new ${type} card has been added to your list.`,
+      description: `A new ${type} has been added to your cloud storage.`,
     });
   };
 
   const removeMeeting = (id: string) => {
-    if (meetings.length <= 1) {
-      toast({
-        variant: "destructive",
-        title: "Cannot Remove",
-        description: "You need at least one entry in your schedule.",
-      });
-      return;
-    }
-    setMeetings(meetings.filter((m) => m.id !== id));
+    if (!user || !db) return;
+    const meetingDoc = doc(db, "users", user.uid, "meetings", id);
+    deleteDocumentNonBlocking(meetingDoc);
   };
 
   const updateMeeting = (id: string, updates: Partial<Meeting>) => {
-    setMeetings(
-      meetings.map((m) => (m.id === id ? { ...m, ...updates } : m))
-    );
+    if (!user || !db) return;
+    const meetingDoc = doc(db, "users", user.uid, "meetings", id);
+    updateDocumentNonBlocking(meetingDoc, {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
   };
 
   const handleDownload = () => {
+    if (!meetings || meetings.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No entries",
+        description: "Add some entries to your schedule first.",
+      });
+      return;
+    }
+
     const hasEmptyFields = meetings.some((m) => {
         if (m.type === 'shift' && !m.employeeName?.trim()) return true;
         return !m.title.trim() && m.type === 'meeting';
@@ -94,9 +122,17 @@ export default function Schedily() {
     downloadICS(content, "schedule-export.ics");
     toast({
       title: "Success",
-      description: "Your schedule has been exported successfully with reminders.",
+      description: "Your schedule has been exported successfully with cloud-synced data.",
     });
   };
+
+  if (isUserLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -111,45 +147,68 @@ export default function Schedily() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => addItem('meeting')} className="hidden sm:flex items-center gap-2">
-              <CalendarPlus className="w-4 h-4" /> Meeting
-            </Button>
-            <Button variant="outline" onClick={() => addItem('shift')} className="hidden sm:flex items-center gap-2 border-accent/20 hover:border-accent text-accent">
-              <Briefcase className="w-4 h-4" /> Shift
-            </Button>
-            <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md flex items-center gap-2">
-              <Download className="w-4 h-4" /> <span className="hidden sm:inline">Export .ics</span>
-            </Button>
+            {user ? (
+              <>
+                <Button variant="outline" onClick={() => addItem('meeting')} className="hidden sm:flex items-center gap-2">
+                  <CalendarPlus className="w-4 h-4" /> Meeting
+                </Button>
+                <Button variant="outline" onClick={() => addItem('shift')} className="hidden sm:flex items-center gap-2 border-accent/20 hover:border-accent text-accent">
+                  <Briefcase className="w-4 h-4" /> Shift
+                </Button>
+                <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md flex items-center gap-2">
+                  <Download className="w-4 h-4" /> <span className="hidden sm:inline">Export .ics</span>
+                </Button>
+              </>
+            ) : (
+              <Button onClick={handleSignIn} className="bg-primary hover:bg-primary/90">
+                <LogIn className="w-4 h-4 mr-2" /> Get Started
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
-        {!hydrated ? (
-          <div className="flex items-center justify-center min-h-[400px]">
-             <div className="animate-pulse flex flex-col items-center gap-4">
-                <div className="w-12 h-12 bg-muted rounded-full"></div>
-                <div className="h-4 w-48 bg-muted rounded"></div>
-             </div>
+        {!user ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+              <Sparkles className="w-10 h-10 text-primary" />
+            </div>
+            <h2 className="text-4xl font-bold font-headline text-slate-800 mb-4">Welcome to Schedily</h2>
+            <p className="text-muted-foreground text-xl max-w-xl mb-8">
+              Sync your professional meetings and retail shifts to the cloud and export them to any calendar with smart reminders.
+            </p>
+            <Button size="lg" onClick={handleSignIn} className="px-8 py-6 h-auto text-lg rounded-2xl">
+               Start Scheduling Now
+            </Button>
           </div>
         ) : (
           <>
             <div className="mb-10 text-center sm:text-left">
-              <h2 className="text-3xl font-bold font-headline text-slate-800 mb-2">Schedule Management</h2>
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-3xl font-bold font-headline text-slate-800">My Schedule</h2>
+                {isMeetingsLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+              </div>
               <p className="text-muted-foreground text-lg">
-                Create meetings or retail shifts and export them directly to any calendar with smart reminders.
+                Your entries are automatically saved and synced to your account.
               </p>
             </div>
 
             <div className="space-y-4">
-              {meetings.map((meeting) => (
-                <MeetingCard
-                  key={meeting.id}
-                  meeting={meeting}
-                  onUpdate={updateMeeting}
-                  onRemove={removeMeeting}
-                />
-              ))}
+              {meetings && meetings.length > 0 ? (
+                meetings.map((meeting) => (
+                  <MeetingCard
+                    key={meeting.id}
+                    meeting={meeting}
+                    onUpdate={updateMeeting}
+                    onRemove={removeMeeting}
+                  />
+                ))
+              ) : !isMeetingsLoading && (
+                <div className="text-center py-20 border-2 border-dashed rounded-3xl bg-slate-50">
+                  <p className="text-muted-foreground">Your schedule is currently empty. Add a meeting or shift below!</p>
+                </div>
+              )}
             </div>
 
             <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
