@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -19,7 +18,10 @@ import {
   ArrowRight,
   TrendingUp,
   Search,
-  MessageSquare
+  MessageSquare,
+  ShieldCheck,
+  Zap,
+  Clock
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -236,7 +238,7 @@ export default function SchedilyDashboard() {
               </>
             ) : (
               <Link href="/login">
-                <Button className="bg-primary hover:bg-primary/90 rounded-full px-6">Login / Join</Button>
+                <Button className="bg-primary hover:bg-primary/90 rounded-full px-6 shadow-lg shadow-primary/20">Login / Join</Button>
               </Link>
             )}
           </div>
@@ -245,25 +247,81 @@ export default function SchedilyDashboard() {
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         {!user ? (
-          <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-            <div className="relative mb-12">
-               <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-               <div className="relative w-28 h-28 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center border border-slate-100">
-                  <Users className="w-14 h-14 text-primary" />
-               </div>
-            </div>
-            <h2 className="text-5xl md:text-6xl font-black font-headline text-slate-900 mb-6 leading-[1.1] tracking-tight text-balance">
-              Professional Social Coordination.
-            </h2>
-            <p className="text-slate-600 text-xl max-w-2xl mb-12 leading-relaxed">
-              Build your professional network and securely push tasks into teammates' schedules. Social coordination, reinvented.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-6">
-              <Link href="/login">
-                <Button size="lg" className="px-12 py-8 h-auto text-xl rounded-2xl shadow-2xl font-bold bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1">
-                   Start Your Network
+          <div className="flex flex-col items-center justify-center min-h-[80vh] py-20 relative overflow-hidden">
+            {/* Decorative background elements */}
+            <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/5 rounded-full blur-[100px]" />
+            <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-accent/5 rounded-full blur-[100px]" />
+            
+            <div className="relative z-10 flex flex-col items-center text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                <Zap className="w-3 h-3 fill-current" /> Powered by SYNC TECH Solutions
+              </div>
+              
+              <h2 className="text-5xl md:text-7xl font-black font-headline text-slate-900 mb-8 leading-[1.05] tracking-tight text-balance">
+                Professional Social <span className="text-primary italic">Coordination</span>.
+              </h2>
+              
+              <p className="text-slate-600 text-xl md:text-2xl max-w-3xl mb-12 leading-relaxed font-medium">
+                The ultimate coordination hub for businesses. Manage <span className="text-slate-900 font-bold">Retail Shift Management</span>, synchronize team schedules, and tag colleagues in high-performance environments.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-6 mb-20">
+                <Link href="/login">
+                  <Button size="lg" className="px-12 py-8 h-auto text-xl rounded-2xl shadow-2xl shadow-primary/30 font-bold bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1 active:scale-95">
+                     Join the Network
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="lg" className="px-10 py-8 h-auto text-xl rounded-2xl font-bold text-slate-600 hover:text-primary transition-all">
+                  How it Works <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
-              </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+                <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:border-primary/20 transition-all text-left">
+                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+                    <Users className="w-6 h-6 text-primary" />
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Tag & Dispatch</h4>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Socially push tasks directly into a teammate's schedule with our innovative tagging ecosystem.
+                  </p>
+                </div>
+                
+                <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:border-accent/20 transition-all text-left">
+                  <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center mb-6">
+                    <Download className="w-6 h-6 text-accent" />
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Smart ICS Engine</h4>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Generate professional Vcalendar files with built-in preparation alarms for Apple and Google calendars.
+                  </p>
+                </div>
+
+                <div className="p-8 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:border-emerald-200 transition-all text-left">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6">
+                    <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Privacy First</h4>
+                  <p className="text-slate-500 text-sm leading-relaxed">
+                    Advanced Firestore Security Rules protect personal schedules while enabling seamless team coordination.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-24 pt-12 border-t border-slate-200 w-full flex flex-col items-center">
+                <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-4">Developed by</p>
+                <div className="flex items-center gap-6">
+                  <div className="text-center">
+                    <p className="text-slate-900 font-black text-lg">Sheraz Hussain</p>
+                    <p className="text-primary font-bold text-xs">Lead Developer</p>
+                  </div>
+                  <div className="w-px h-10 bg-slate-200" />
+                  <div className="text-center">
+                    <p className="text-slate-900 font-black text-lg">SYNC TECH Solutions</p>
+                    <p className="text-accent font-bold text-xs">Innovation Partner</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
