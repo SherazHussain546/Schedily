@@ -2,27 +2,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. User Profile Rules
+    // User Profile Rules
+    // Profiles are readable by authenticated users so managers can find employees by username
+    // Owners can create/update their own profile
     match /users/{userId} {
-      // Profiles are readable by authenticated users so managers can find employees by username
       allow read: if request.auth != null;
-      // Only the owner can manage their own profile metadata
       allow write: if request.auth != null && request.auth.uid == userId;
+    }
 
-      // 2. Meetings and Shifts Subcollection
-      match /meetings/{meetingId} {
-        
-        // Ownership Rule: The employee has full access to their own schedule (List, Get, Create, Update, Delete)
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-
-        // Manager "Push" Rule: 
-        // Allows a Manager to "Send" a meeting to this user's schedule.
-        // They can ONLY create. They cannot read the employee's existing schedule.
-        // They must identify themselves as the sender.
-        allow create: if request.auth != null && 
-          request.resource.data.senderId != null && 
-          request.resource.data.senderId == request.auth.uid;
-      }
+    // Meetings and Shifts Subcollection - Flattened for robust 'list' operations
+    // Rule 1: The owner of the path has full access (read includes get and list)
+    // Rule 2: A Manager can "Push" a meeting to any user's schedule (create only)
+    match /users/{userId}/meetings/{meetingId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      allow create: if request.auth != null && 
+        request.resource.data.senderId != null && 
+        request.resource.data.senderId == request.auth.uid;
     }
   }
 }
