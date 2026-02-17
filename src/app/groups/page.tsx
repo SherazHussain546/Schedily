@@ -14,7 +14,8 @@ import {
   Sparkles,
   Trash2,
   UserPlus,
-  Search
+  Search,
+  MessageSquare
 } from "lucide-react";
 import { 
   useUser, 
@@ -29,7 +30,9 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Label } from "@/components/ui/label";
+import { GroupChat } from "@/components/GroupChat";
 
 export default function GroupsPage(props: {
   params: Promise<any>;
@@ -50,14 +53,12 @@ export default function GroupsPage(props: {
   // Fetch groups to display in the management hub
   const groupsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    // For MVP, we'll list groups created by the user or all discoverable groups
-    // In a scaled app, we'd query by membership via collection group or user profile field
     return collection(db, "groups");
   }, [db, user]);
 
   const { data: allGroups, isLoading: isGroupsLoading } = useCollection(groupsQuery);
 
-  // Filter groups where current user is the owner or (if we had the data) a member
+  // Filter groups where current user is the owner
   const myGroups = allGroups?.filter(g => g.ownerId === user?.uid) || [];
 
   const createGroup = async (e: React.FormEvent) => {
@@ -198,6 +199,17 @@ export default function GroupsPage(props: {
                       </div>
                       
                       <div className="flex items-center gap-2">
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button variant="ghost" size="sm" className="rounded-xl font-bold text-slate-600 hover:bg-slate-100">
+                              <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="right" className="p-0 w-full sm:max-w-md border-none">
+                            <GroupChat groupId={group.id} groupName={group.name} />
+                          </SheetContent>
+                        </Sheet>
+
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="ghost" size="sm" className="rounded-xl font-bold text-primary hover:bg-primary/5">

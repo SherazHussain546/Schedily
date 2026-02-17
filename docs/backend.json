@@ -127,6 +127,18 @@
         "ownerId"
       ]
     },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "A message sent within a group chat.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["senderId", "senderName", "text", "createdAt"]
+    },
     "Connection": {
       "title": "Connection",
       "description": "A professional following relationship.",
@@ -195,6 +207,12 @@
         "$ref": "#/backend/entities/Meeting"
       },
       "description": "Shared group schedule."
+    },
+    "/groups/{groupId}/messages/{messageId}": {
+      "schema": {
+        "$ref": "#/backend/entities/ChatMessage"
+      },
+      "description": "Real-time group chat messages."
     }
   }
 }

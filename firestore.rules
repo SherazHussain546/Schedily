@@ -47,6 +47,11 @@ service cloud.firestore {
         allow read: if request.auth != null && isMember();
         allow create, update, delete: if request.auth != null && isMember();
       }
+
+      match /messages/{messageId} {
+        // Only members can read/write messages
+        allow read, create: if request.auth != null && isMember();
+      }
     }
   }
 }
