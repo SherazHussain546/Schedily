@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { Meeting, ItemType } from "@/lib/calendar-utils";
 import { MeetingCard } from "@/components/MeetingCard";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { generateICSContent, downloadICS } from "@/lib/calendar-utils";
 
-export default function SchedilyDashboard() {
+export default function SchedilyDashboard(props: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+  
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();

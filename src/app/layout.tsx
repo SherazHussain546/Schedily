@@ -53,11 +53,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
+export default async function RootLayout(props: {
   children: React.ReactNode;
-}>) {
+  params: Promise<any>;
+}) {
+  const params = await props.params;
+  const children = props.children;
+
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-body antialiased">

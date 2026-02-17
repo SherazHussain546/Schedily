@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -41,7 +40,13 @@ import { doc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 
-export default function ProfilePage() {
+export default function ProfilePage(props: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();

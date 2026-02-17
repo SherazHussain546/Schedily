@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,13 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function LoginPage(props: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();

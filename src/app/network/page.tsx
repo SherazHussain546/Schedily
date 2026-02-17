@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,13 @@ import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
 
-export default function NetworkPage() {
+export default function NetworkPage(props: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
+  const params = use(props.params);
+  const searchParams = use(props.searchParams);
+
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
