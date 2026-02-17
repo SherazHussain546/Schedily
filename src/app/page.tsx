@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Meeting, generateICSContent, downloadICS, ItemType } from "@/lib/calendar-utils";
 import { MeetingCard } from "@/components/MeetingCard";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, Download, Sparkles, LayoutDashboard, Briefcase, LogIn, Loader2 } from "lucide-react";
+import { CalendarPlus, Download, Sparkles, LayoutDashboard, Briefcase, LogIn, Loader2, LogOut, User as UserIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { 
@@ -15,15 +15,18 @@ import {
   useMemoFirebase,
   addDocumentNonBlocking,
   updateDocumentNonBlocking,
-  deleteDocumentNonBlocking,
-  initiateAnonymousSignIn
+  deleteDocumentNonBlocking
 } from "@/firebase";
 import { collection, doc, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { signOut } from "firebase/auth";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Schedily() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();
+  const router = useRouter();
   const [year, setYear] = useState<number>(2025);
 
   useEffect(() => {
@@ -41,8 +44,21 @@ export default function Schedily() {
 
   const { data: meetings, isLoading: isMeetingsLoading } = useCollection<Meeting>(meetingsQuery);
 
-  const handleSignIn = () => {
-    initiateAnonymousSignIn(auth);
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+      router.push("/login");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out.",
+      });
+    }
   };
 
   const addItem = (type: ItemType) => {
@@ -51,6 +67,7 @@ export default function Schedily() {
         title: "Sign in required",
         description: "Please sign in to save your schedule.",
       });
+      router.push("/login");
       return;
     }
 
@@ -149,20 +166,23 @@ export default function Schedily() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Button variant="outline" onClick={() => addItem('meeting')} className="hidden sm:flex items-center gap-2">
-                  <CalendarPlus className="w-4 h-4" /> Meeting
+                <div className="hidden md:flex items-center gap-2 mr-2 text-sm text-muted-foreground font-medium">
+                  <UserIcon className="w-4 h-4" />
+                  {user.isAnonymous ? "Guest User" : user.email}
+                </div>
+                <Button variant="outline" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive">
+                  <LogOut className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Sign Out</span>
                 </Button>
-                <Button variant="outline" onClick={() => addItem('shift')} className="hidden sm:flex items-center gap-2 border-accent/20 hover:border-accent text-accent">
-                  <Briefcase className="w-4 h-4" /> Shift
-                </Button>
-                <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md flex items-center gap-2">
+                <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md flex items-center gap-2 ml-2">
                   <Download className="w-4 h-4" /> <span className="hidden sm:inline">Export .ics</span>
                 </Button>
               </>
             ) : (
-              <Button onClick={handleSignIn} className="bg-primary hover:bg-primary/90">
-                <LogIn className="w-4 h-4 mr-2" /> Get Started
-              </Button>
+              <Link href="/login">
+                <Button className="bg-primary hover:bg-primary/90">
+                  <LogIn className="w-4 h-4 mr-2" /> Get Started
+                </Button>
+              </Link>
             )}
           </div>
         </div>
@@ -178,20 +198,32 @@ export default function Schedily() {
             <p className="text-muted-foreground text-xl max-w-xl mb-8">
               Sync your professional meetings and retail shifts to the cloud and export them to any calendar with smart reminders.
             </p>
-            <Button size="lg" onClick={handleSignIn} className="px-8 py-6 h-auto text-lg rounded-2xl">
-               Start Scheduling Now
-            </Button>
+            <Link href="/login">
+              <Button size="lg" className="px-8 py-6 h-auto text-lg rounded-2xl shadow-xl shadow-primary/20">
+                 Start Scheduling Now
+              </Button>
+            </Link>
           </div>
         ) : (
           <>
-            <div className="mb-10 text-center sm:text-left">
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-3xl font-bold font-headline text-slate-800">My Schedule</h2>
-                {isMeetingsLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+            <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <div className="flex items-center gap-3 mb-2 justify-center sm:justify-start">
+                  <h2 className="text-3xl font-bold font-headline text-slate-800">My Schedule</h2>
+                  {isMeetingsLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
+                </div>
+                <p className="text-muted-foreground text-lg">
+                  Your entries are automatically saved and synced to your account.
+                </p>
               </div>
-              <p className="text-muted-foreground text-lg">
-                Your entries are automatically saved and synced to your account.
-              </p>
+              <div className="flex gap-2 justify-center">
+                <Button variant="outline" onClick={() => addItem('meeting')} className="flex items-center gap-2">
+                  <CalendarPlus className="w-4 h-4" /> Meeting
+                </Button>
+                <Button variant="outline" onClick={() => addItem('shift')} className="flex items-center gap-2 border-accent/20 hover:border-accent text-accent">
+                  <Briefcase className="w-4 h-4" /> Shift
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -206,7 +238,7 @@ export default function Schedily() {
                 ))
               ) : !isMeetingsLoading && (
                 <div className="text-center py-20 border-2 border-dashed rounded-3xl bg-slate-50">
-                  <p className="text-muted-foreground">Your schedule is currently empty. Add a meeting or shift below!</p>
+                  <p className="text-muted-foreground">Your schedule is currently empty. Add a meeting or shift above!</p>
                 </div>
               )}
             </div>
