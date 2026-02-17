@@ -13,11 +13,11 @@ import {
   Loader2, 
   LogOut, 
   User as UserIcon,
-  Trash,
   Info,
   Users,
   UserPlus,
-  ArrowRight
+  ArrowRight,
+  TrendingUp
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -199,7 +199,7 @@ export default function SchedilyDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-body pb-20">
+    <div className="min-h-screen bg-[#F8FAFC] font-body pb-20">
       <header className="sticky top-0 z-30 w-full border-b bg-white/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
@@ -244,53 +244,58 @@ export default function SchedilyDashboard() {
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
         {!user ? (
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-8">
-              <Sparkles className="w-12 h-12 text-primary" />
+          <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+            <div className="relative mb-12">
+               <div className="absolute -inset-4 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+               <div className="relative w-28 h-28 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center border border-slate-100">
+                  <Sparkles className="w-14 h-14 text-primary" />
+               </div>
             </div>
-            <h2 className="text-5xl font-black font-headline text-slate-900 mb-6 leading-tight">
-              The Professional<br/><span className="text-primary underline decoration-accent/30 underline-offset-8">Coordination Network.</span>
+            <h2 className="text-6xl font-black font-headline text-slate-900 mb-6 leading-[1.1] tracking-tight">
+              The Professional<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Coordination Network.</span>
             </h2>
-            <p className="text-slate-600 text-xl max-w-2xl mb-10 leading-relaxed">
-              Build your team network, tag colleagues, and push shifts directly to their calendars. Effortless scheduling for modern teams.
+            <p className="text-slate-600 text-xl max-w-2xl mb-12 leading-relaxed">
+              Build your professional network, follow colleagues, and "tag" them into shifts. Effortless scheduling for teams that move fast.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-6">
               <Link href="/login">
-                <Button size="lg" className="px-10 py-7 h-auto text-lg rounded-2xl shadow-xl font-bold bg-primary hover:bg-primary/90">
-                   Get Started Now
+                <Button size="lg" className="px-12 py-8 h-auto text-xl rounded-2xl shadow-2xl font-bold bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1">
+                   Start Your Network
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="px-10 py-7 h-auto text-lg rounded-2xl font-bold border-slate-200">
-                How it Works
+              <Button size="lg" variant="outline" className="px-12 py-8 h-auto text-xl rounded-2xl font-bold border-slate-200 bg-white hover:bg-slate-50">
+                Explore Features
               </Button>
             </div>
           </div>
         ) : (
           <>
-            <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-              <div className="space-y-1">
-                <h2 className="text-4xl font-black font-headline text-slate-900 tracking-tight">My Feed</h2>
-                <p className="text-slate-500 font-medium">Incoming shifts and personal entries.</p>
+            <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-widest">
+                  <TrendingUp className="w-4 h-4" /> Your Professional Feed
+                </div>
+                <h2 className="text-4xl font-black font-headline text-slate-900 tracking-tight">My Coordination</h2>
               </div>
-              <div className="flex gap-3">
-                <Button onClick={() => addItem('meeting')} variant="outline" className="h-12 px-6 rounded-2xl border-slate-200 font-semibold hover:bg-white hover:border-primary/50 transition-all">
-                  <CalendarPlus className="w-5 h-5 mr-2 text-primary" /> Draft Meeting
+              <div className="flex gap-4">
+                <Button onClick={() => addItem('meeting')} variant="outline" className="h-14 px-8 rounded-2xl border-slate-200 bg-white font-bold hover:border-primary/50 transition-all shadow-sm">
+                  <CalendarPlus className="w-5 h-5 mr-2 text-primary" /> Meeting
                 </Button>
-                <Button onClick={() => addItem('shift')} className="bg-accent hover:bg-accent/90 text-white h-12 px-8 rounded-2xl font-bold shadow-lg shadow-accent/20 transition-all transform hover:scale-105 active:scale-95">
-                  <Briefcase className="w-5 h-5 mr-2" /> Create Shift
+                <Button onClick={() => addItem('shift')} className="bg-accent hover:bg-accent/90 text-white h-14 px-10 rounded-2xl font-bold shadow-xl shadow-accent/20 transition-all transform hover:scale-105 active:scale-95">
+                  <Briefcase className="w-5 h-5 mr-2" /> Post Shift
                 </Button>
               </div>
             </div>
 
             {expiredMeetings.length > 0 && (
-              <div className="mb-8 p-4 bg-white border border-slate-100 rounded-3xl flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3 text-sm text-slate-500">
-                  <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                    <Info className="w-4 h-4 text-primary/60" />
+              <div className="mb-10 p-5 bg-white border border-slate-100 rounded-3xl flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
+                  <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
+                    <Info className="w-5 h-5 text-primary/70" />
                   </div>
-                  <span className="font-medium">{expiredMeetings.length} historical entries can be archived.</span>
+                  <span>You have {expiredMeetings.length} historical entries to archive.</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-primary hover:bg-primary/5 rounded-full font-bold">
+                <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-primary hover:bg-primary/5 rounded-full font-black px-6">
                   Archive All
                 </Button>
               </div>
@@ -298,8 +303,9 @@ export default function SchedilyDashboard() {
 
             <div className="space-y-8">
               {isMeetingsLoading ? (
-                <div className="flex justify-center py-20">
-                  <Loader2 className="w-10 h-10 animate-spin text-primary/20" />
+                <div className="flex flex-col items-center justify-center py-32 gap-4">
+                  <Loader2 className="w-12 h-12 animate-spin text-primary/40" />
+                  <p className="text-slate-400 font-bold">Synchronizing Feed...</p>
                 </div>
               ) : currentMeetings.length > 0 ? (
                 currentMeetings.map((meeting) => (
@@ -313,16 +319,18 @@ export default function SchedilyDashboard() {
                   />
                 ))
               ) : (
-                <div className="text-center py-24 border-2 border-dashed border-slate-200 rounded-[48px] bg-white group hover:border-primary/30 transition-all">
-                  <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                    <CalendarPlus className="w-10 h-10 text-slate-300" />
+                <div className="text-center py-32 border-4 border-dashed border-slate-200 rounded-[64px] bg-white/50 group hover:border-primary/30 transition-all">
+                  <div className="w-24 h-24 bg-white rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform border border-slate-100">
+                    <CalendarPlus className="w-12 h-12 text-slate-300" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-400">Your Feed is Quiet</h3>
-                  <p className="text-slate-400 mt-2 max-w-xs mx-auto">Start creating your own entries or connect with teammates to receive shifts.</p>
-                  <div className="mt-8 flex justify-center gap-4">
+                  <h3 className="text-3xl font-black text-slate-900 mb-4">Empty Feed</h3>
+                  <p className="text-slate-500 mt-2 max-w-sm mx-auto text-lg leading-relaxed">
+                    Start posting your own entries or build your professional network to coordinate with teammates.
+                  </p>
+                  <div className="mt-10 flex justify-center gap-4">
                     <Link href="/network">
-                      <Button variant="outline" className="rounded-full font-bold border-slate-200">
-                        <UserPlus className="w-4 h-4 mr-2" /> Grow Network
+                      <Button size="lg" variant="outline" className="rounded-2xl font-black border-slate-200 h-14 px-10 hover:bg-white hover:text-primary hover:border-primary/30">
+                        <UserPlus className="w-5 h-5 mr-2" /> Find Colleagues
                       </Button>
                     </Link>
                   </div>
@@ -331,25 +339,33 @@ export default function SchedilyDashboard() {
             </div>
 
             {followingList && followingList.length > 0 && (
-              <div className="mt-20 p-10 bg-white border border-slate-100 rounded-[48px] shadow-xl shadow-slate-200/50">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-2xl font-black font-headline text-slate-900 flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                      <Users className="w-4 h-4 text-white" />
-                    </div>
-                    Professional Team
-                  </h3>
+              <div className="mt-24 p-12 bg-white border border-slate-100 rounded-[56px] shadow-2xl shadow-slate-200/40 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                   <Users className="w-32 h-32 text-primary rotate-12" />
+                </div>
+                
+                <div className="flex items-center justify-between mb-10 relative">
+                  <div className="space-y-1">
+                    <h3 className="text-3xl font-black font-headline text-slate-900 flex items-center gap-4">
+                      <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <Users className="w-5 h-5 text-primary" />
+                      </div>
+                      Network Circle
+                    </h3>
+                    <p className="text-slate-500 font-medium ml-14">Professionals you coordinate with.</p>
+                  </div>
                   <Link href="/network">
-                    <Button variant="ghost" className="text-primary font-bold hover:bg-primary/5 rounded-full">
-                      Manage <ArrowRight className="w-4 h-4 ml-2" />
+                    <Button variant="ghost" className="text-primary font-black hover:bg-primary/5 rounded-full px-8 h-12">
+                      Manage Network <ArrowRight className="w-5 h-5 ml-2" />
                     </Button>
                   </Link>
                 </div>
-                <div className="flex flex-wrap gap-4">
+
+                <div className="flex flex-wrap gap-4 relative">
                   {followingList.map((f: any) => (
                     <div key={f.id} className="group relative">
-                      <div className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 hover:bg-primary hover:text-white hover:border-primary transition-all cursor-default flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] group-hover:bg-white/20">
+                      <div className="px-8 py-4 bg-slate-50 border border-slate-100 rounded-3xl text-base font-bold text-slate-700 hover:bg-primary hover:text-white hover:border-primary hover:shadow-xl hover:shadow-primary/20 transition-all cursor-default flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-2xl bg-primary/10 flex items-center justify-center text-xs group-hover:bg-white/20">
                           {f.targetName?.substring(0, 1).toUpperCase()}
                         </div>
                         @{f.targetName}
@@ -357,8 +373,8 @@ export default function SchedilyDashboard() {
                     </div>
                   ))}
                   <Link href="/network">
-                    <Button variant="ghost" className="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-200 text-slate-300 hover:border-primary hover:text-primary transition-all">
-                      <UserPlus className="w-6 h-6" />
+                    <Button variant="ghost" className="w-16 h-16 rounded-[2rem] border-2 border-dashed border-slate-200 text-slate-300 hover:border-primary hover:text-primary transition-all bg-slate-50/50">
+                      <UserPlus className="w-7 h-7" />
                     </Button>
                   </Link>
                 </div>
@@ -371,4 +387,3 @@ export default function SchedilyDashboard() {
     </div>
   );
 }
-

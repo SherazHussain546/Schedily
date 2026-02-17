@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Represents a user's professional profile for discovery and networking.",
+      "description": "Represents a professional on the network, searchable by others for coordination.",
       "type": "object",
       "properties": {
         "id": {
@@ -12,16 +12,16 @@
         },
         "email": {
           "type": "string",
-          "description": "User's email address.",
+          "description": "User's professional email.",
           "format": "email"
         },
         "displayName": {
           "type": "string",
-          "description": "Unique username used for tagging and delivery."
+          "description": "Unique username used for tagging and shift delivery."
         },
         "bio": {
           "type": "string",
-          "description": "Brief professional summary."
+          "description": "Professional summary or role."
         },
         "createdAt": {
           "type": "string",
@@ -42,15 +42,16 @@
     },
     "Meeting": {
       "title": "Meeting",
-      "description": "Represents a shift or meeting entry delivered to a user.",
+      "description": "A shift or coordination entry pushed to a professional's schedule.",
       "type": "object",
       "properties": {
         "userId": {
           "type": "string",
-          "description": "Owner of the schedule entry."
+          "description": "Owner of the schedule."
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "Task or meeting name."
         },
         "type": {
           "type": "string",
@@ -80,10 +81,12 @@
           "type": "string"
         },
         "senderId": {
-          "type": "string"
+          "type": "string",
+          "description": "Who dispatched this shift."
         },
         "senderName": {
-          "type": "string"
+          "type": "string",
+          "description": "Name of the dispatcher."
         },
         "createdAt": {
           "type": "string",
@@ -102,16 +105,14 @@
     },
     "Connection": {
       "title": "Connection",
-      "description": "Represents a professional follow relationship.",
+      "description": "A professional following relationship.",
       "type": "object",
       "properties": {
         "userId": {
-          "type": "string",
-          "description": "The user following."
+          "type": "string"
         },
         "targetId": {
-          "type": "string",
-          "description": "The user being followed."
+          "type": "string"
         },
         "targetName": {
           "type": "string"
@@ -134,19 +135,19 @@
       "schema": {
         "$ref": "#/backend/entities/UserProfile"
       },
-      "description": "Public user profile."
+      "description": "Public professional profile."
     },
     "/users/{userId}/meetings/{meetingId}": {
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "Private schedule feed and incoming requests."
+      "description": "Personal schedule feed and incoming requests."
     },
     "/users/{userId}/following/{followedUserId}": {
       "schema": {
         "$ref": "#/backend/entities/Connection"
       },
-      "description": "User's professional network."
+      "description": "List of colleagues followed for coordination."
     }
   }
 }
