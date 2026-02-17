@@ -18,7 +18,8 @@ import {
   UserPlus,
   ArrowRight,
   TrendingUp,
-  Search
+  Search,
+  MessageSquare
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -184,7 +185,7 @@ export default function SchedilyDashboard() {
         updatedAt: serverTimestamp(),
       });
 
-      toast({ title: "Shift Dispatched", description: `Successfully pushed to @${targetUsername}.` });
+      toast({ title: "Task Pushed", description: `Sent to @${targetUsername}'s mailbox.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Dispatch Failed" });
     }
@@ -251,16 +252,16 @@ export default function SchedilyDashboard() {
                   <Users className="w-14 h-14 text-primary" />
                </div>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black font-headline text-slate-900 mb-6 leading-[1.1] tracking-tight">
-              The Social<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Coordination Network.</span>
+            <h2 className="text-5xl md:text-6xl font-black font-headline text-slate-900 mb-6 leading-[1.1] tracking-tight text-balance">
+              Professional Social Coordination.
             </h2>
             <p className="text-slate-600 text-xl max-w-2xl mb-12 leading-relaxed">
-              Connect with colleagues, build your professional network, and tag teammates into shifts. Professional scheduling, reinvented for social coordination.
+              Build your professional network and securely push tasks into teammates' schedules. Social coordination, reinvented.
             </p>
             <div className="flex flex-col sm:flex-row gap-6">
               <Link href="/login">
                 <Button size="lg" className="px-12 py-8 h-auto text-xl rounded-2xl shadow-2xl font-bold bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1">
-                   Build Your Network
+                   Start Your Network
                 </Button>
               </Link>
             </div>
@@ -270,13 +271,13 @@ export default function SchedilyDashboard() {
             <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-widest">
-                  <TrendingUp className="w-4 h-4" /> Professional Feed
+                  <TrendingUp className="w-4 h-4" /> My Professional Hub
                 </div>
-                <h2 className="text-4xl font-black font-headline text-slate-900 tracking-tight">My Coordination</h2>
+                <h2 className="text-4xl font-black font-headline text-slate-900 tracking-tight">Social Coordination</h2>
               </div>
               <div className="flex gap-4">
                 <Button onClick={() => addItem('meeting')} variant="outline" className="h-14 px-8 rounded-2xl border-slate-200 bg-white font-bold hover:border-primary/50 transition-all shadow-sm">
-                  <CalendarPlus className="w-5 h-5 mr-2 text-primary" /> Meeting
+                  <MessageSquare className="w-5 h-5 mr-2 text-primary" /> Meeting
                 </Button>
                 <Button onClick={() => addItem('shift')} className="bg-accent hover:bg-accent/90 text-white h-14 px-10 rounded-2xl font-bold shadow-xl shadow-accent/20 transition-all transform hover:scale-105">
                   <Briefcase className="w-5 h-5 mr-2" /> New Shift
@@ -290,7 +291,7 @@ export default function SchedilyDashboard() {
                   <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
                     <Info className="w-5 h-5 text-primary/70" />
                   </div>
-                  <span>Clear {expiredMeetings.length} historical entries.</span>
+                  <span>Clear {expiredMeetings.length} historical tasks.</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-primary hover:bg-primary/5 rounded-full font-black px-6">
                   Archive
@@ -302,7 +303,7 @@ export default function SchedilyDashboard() {
               {isMeetingsLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 gap-4">
                   <Loader2 className="w-12 h-12 animate-spin text-primary/40" />
-                  <p className="text-slate-400 font-bold">Updating Feed...</p>
+                  <p className="text-slate-400 font-bold">Syncing Network...</p>
                 </div>
               ) : currentMeetings.length > 0 ? (
                 currentMeetings.map((meeting) => (
@@ -320,14 +321,14 @@ export default function SchedilyDashboard() {
                   <div className="w-24 h-24 bg-white rounded-3xl shadow-lg flex items-center justify-center mx-auto mb-8 border border-slate-100">
                     <CalendarPlus className="w-12 h-12 text-slate-300" />
                   </div>
-                  <h3 className="text-3xl font-black text-slate-900 mb-4">No Active Tasks</h3>
+                  <h3 className="text-3xl font-black text-slate-900 mb-4">Your Feed is Empty</h3>
                   <p className="text-slate-500 mt-2 max-w-sm mx-auto text-lg">
-                    Build your network to start coordinating with teammates.
+                    Build your professional network to start coordinating tasks.
                   </p>
                   <div className="mt-10">
                     <Link href="/network">
                       <Button size="lg" className="rounded-2xl font-black h-14 px-10">
-                        <UserPlus className="w-5 h-5 mr-2" /> Find Teammates
+                        <UserPlus className="w-5 h-5 mr-2" /> Find Colleagues
                       </Button>
                     </Link>
                   </div>
@@ -352,7 +353,7 @@ export default function SchedilyDashboard() {
                 <div className="flex flex-wrap gap-3">
                   {followingList.map((f: any) => (
                     <div key={f.id} className="px-6 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] text-primary">
+                      <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] text-primary font-black">
                         {f.targetName?.substring(0, 1).toUpperCase()}
                       </div>
                       @{f.targetName}
@@ -373,3 +374,4 @@ export default function SchedilyDashboard() {
     </div>
   );
 }
+
