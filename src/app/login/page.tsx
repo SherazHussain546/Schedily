@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Mail, Lock, LogIn, UserPlus, Loader2, ArrowLeft } from "lucide-react";
-import { useAuth, useUser, initiateEmailSignIn, initiateEmailSignUp, initiateAnonymousSignIn, errorEmitter } from "@/firebase";
+import { Sparkles, Mail, Lock, LogIn, UserPlus, Loader2, ArrowLeft, User } from "lucide-react";
+import { useAuth, useUser, useFirestore, initiateEmailSignIn, initiateEmailSignUp, initiateAnonymousSignIn, errorEmitter } from "@/firebase";
 import { toast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import Link from "next/link";
@@ -16,9 +16,12 @@ import Link from "next/link";
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   const router = useRouter();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already logged in
@@ -52,9 +55,16 @@ export default function LoginPage() {
 
   const handleEmailSignUp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!email || !password || !username) {
+      toast({
+        variant: "destructive",
+        title: "Missing Fields",
+        description: "Please fill in all fields including a username.",
+      });
+      return;
+    }
     setIsLoading(true);
-    initiateEmailSignUp(auth, email, password);
+    initiateEmailSignUp(auth, db, email, password, username);
   };
 
   const handleAnonymousSignIn = () => {
@@ -138,6 +148,21 @@ export default function LoginPage() {
               <CardTitle className="text-xl mb-1">Create Account</CardTitle>
               <CardDescription>Join Schedily to start syncing your professional life.</CardDescription>
               <form onSubmit={handleEmailSignUp} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username-signup">Username</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                    <Input 
+                      id="username-signup"
+                      type="text" 
+                      placeholder="Your name" 
+                      className="pl-10" 
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="email-signup">Email</Label>
                   <div className="relative">

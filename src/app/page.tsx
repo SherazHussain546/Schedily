@@ -168,7 +168,7 @@ export default function Schedily() {
               <>
                 <div className="hidden md:flex items-center gap-2 mr-2 text-sm text-muted-foreground font-medium">
                   <UserIcon className="w-4 h-4" />
-                  {user.isAnonymous ? "Guest User" : user.email}
+                  {user.isAnonymous ? "Guest User" : (user.displayName || user.email)}
                 </div>
                 <Button variant="outline" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive">
                   <LogOut className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Sign Out</span>
@@ -213,6 +213,7 @@ export default function Schedily() {
                   {isMeetingsLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
                 </div>
                 <p className="text-muted-foreground text-lg">
+                  {user.displayName ? `Welcome back, ${user.displayName}. ` : ''}
                   Your entries are automatically saved and synced to your account.
                 </p>
               </div>
