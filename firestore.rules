@@ -12,16 +12,17 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Allow searching for users by username (list) for sharing
+      // Users can see other profiles to enable the sharing/lookup feature
       allow get, list: if isSignedIn(); 
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+      // Only the user can create or update their own profile
+      allow create, update: if isOwner(userId);
 
       match /meetings/{meetingId} {
-        allow get, list, update, delete: if isOwner(userId);
+        // Owners have full access to their own meetings
+        allow read, write: if isOwner(userId);
         
-        // Allow creating a meeting in another user's collection if it's an "invite"
-        // Condition: The document must have a 'senderId' matching the requester.
+        // Allow creating a meeting in another user's collection if it's a shared "invite"
+        // The senderId must match the authenticated user's UID
         allow create: if isSignedIn() && 
                       (isOwner(userId) || request.resource.data.senderId == request.auth.uid);
       }

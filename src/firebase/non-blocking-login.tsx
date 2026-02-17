@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Auth,
@@ -33,6 +34,7 @@ export function initiateEmailSignUp(
       
       // Create UserProfile document in Firestore
       const userRef = doc(db, 'users', user.uid);
+      // We use await here inside the .then() as it's part of a sequential setup flow
       await setDoc(userRef, {
         id: user.uid,
         email: user.email,
