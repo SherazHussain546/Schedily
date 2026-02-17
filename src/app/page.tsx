@@ -303,7 +303,7 @@ export default function SchedilyDashboard(props: {
                 <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-primary transition-colors">
                   Sign In
                 </Link>
-                <Link href="/login">
+                <Link href="/login?tab=signup">
                   <Button className="bg-primary hover:bg-primary/90 rounded-xl px-6 font-bold shadow-lg shadow-primary/20">Get Started</Button>
                 </Link>
               </div>
@@ -337,7 +337,7 @@ export default function SchedilyDashboard(props: {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-24">
-                  <Link href="/login">
+                  <Link href="/login?tab=signup">
                     <Button size="lg" className="px-14 py-8 h-auto text-xl rounded-2xl shadow-2xl shadow-primary/30 font-black bg-primary hover:bg-primary/90 transform transition-all hover:-translate-y-1 active:scale-95">
                        Join the Network
                     </Button>
@@ -485,7 +485,7 @@ export default function SchedilyDashboard(props: {
                      Ready to <span className="text-primary">Sync</span> Your Team?
                   </h3>
                   <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                    <Link href="/login">
+                    <Link href="/login?tab=signup">
                       <Button size="lg" className="px-16 py-8 h-auto text-2xl rounded-2xl shadow-2xl shadow-primary/30 font-black bg-primary hover:bg-primary/90 transition-all active:scale-95">
                          Get Started Now
                       </Button>

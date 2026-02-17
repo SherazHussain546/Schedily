@@ -30,6 +30,9 @@ export default function LoginPage(props: {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Determine initial tab from search params
+  const initialTab = searchParams?.tab === "signup" ? "signup" : "login";
+
   // Redirect if already logged in
   useEffect(() => {
     if (user && !isUserLoading) {
@@ -97,13 +100,13 @@ export default function LoginPage(props: {
             Schedily
           </h1>
         </Link>
-        <h2 className="text-2xl font-bold text-slate-800">Welcome Back</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Welcome to the Hub</h2>
         <p className="text-muted-foreground mt-2">Manage your professional schedule with ease.</p>
       </div>
 
       <Card className="w-full max-w-md shadow-xl border-t-4 border-t-primary">
         <CardHeader>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>

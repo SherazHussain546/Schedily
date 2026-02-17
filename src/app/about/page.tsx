@@ -107,7 +107,7 @@ export default function AboutPage() {
 
           <div className="text-center space-y-8">
             <h3 className="text-4xl font-black text-slate-900">Ready to join the synergy?</h3>
-            <Link href="/login">
+            <Link href="/login?tab=signup">
               <Button size="lg" className="rounded-2xl h-16 px-12 font-black shadow-xl shadow-primary/20">
                 Create Your Profile
               </Button>

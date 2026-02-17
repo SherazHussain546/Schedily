@@ -102,7 +102,7 @@ export default function HowItWorksPage() {
               Ready to <span className="text-primary">Dispatch</span> Your First Shift?
             </h3>
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Link href="/login">
+              <Link href="/login?tab=signup">
                 <Button size="lg" className="h-20 px-16 rounded-[2rem] text-2xl font-black bg-primary hover:bg-primary/90 shadow-2xl shadow-primary/40">
                   Launch Your Hub
                 </Button>
@@ -127,7 +127,7 @@ export default function HowItWorksPage() {
                 <span className="font-bold text-slate-400">Real-Time Alerts</span>
               </div>
             </div>
-          </section> section
+          </section>
         </div>
       </main>
 
