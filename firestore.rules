@@ -3,22 +3,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. PUBLIC PROFILES
-    // Allows any authenticated user to find a colleague by username to deliver shifts.
+    // 1. PUBLIC DIRECTORY
+    // Allows any logged-in user to find a colleague by username to deliver shifts.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 2. THE MEETINGS COLLECTION (Mailbox & Private Schedule)
-    // We use {document=**} to ensure 'list' operations (queries) are explicitly allowed for the owner.
-    match /users/{userId}/meetings/{document=**} {
-      
-      // MASTER KEY: The owner of the schedule can do everything (List, Get, Update, Delete)
+    // 2. RECURSIVE OWNERSHIP (The Master Key)
+    // This allows the owner to perform any operation (including LIST/queries) 
+    // on any sub-collection within their own user folder.
+    match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // DELIVERY SLOT: Any logged-in user can CREATE a new entry in someone else's folder.
-      // This is the "Push" mechanism. They cannot 'list' the folder or 'read' existing items.
+    }
+
+    // 3. THE DELIVERY SLOT (The Mailbox)
+    // This allows Managers to "drop off" new meetings in an employee's folder.
+    // They cannot read existing items or list the folder.
+    match /users/{userId}/meetings/{meetingId} {
       allow create: if request.auth != null;
     }
   }
