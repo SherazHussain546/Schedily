@@ -26,6 +26,9 @@ export default function Schedily() {
         startTime: "09:00",
         endTime: "10:00",
         location: "",
+        emails: "",
+        description: "",
+        attachments: ""
       },
     ]);
   }, []);
@@ -39,6 +42,9 @@ export default function Schedily() {
         title: "",
         type,
         employeeName: "",
+        emails: "",
+        description: "",
+        attachments: "",
         date: today,
         startTime: "09:00",
         endTime: "10:00",
@@ -88,7 +94,7 @@ export default function Schedily() {
     downloadICS(content, "schedule-export.ics");
     toast({
       title: "Success",
-      description: "Your schedule has been exported successfully.",
+      description: "Your schedule has been exported successfully with reminders.",
     });
   };
 
@@ -131,7 +137,7 @@ export default function Schedily() {
             <div className="mb-10 text-center sm:text-left">
               <h2 className="text-3xl font-bold font-headline text-slate-800 mb-2">Schedule Management</h2>
               <p className="text-muted-foreground text-lg">
-                Create meetings or retail shifts and export them directly to any calendar.
+                Create meetings or retail shifts and export them directly to any calendar with smart reminders.
               </p>
             </div>
 

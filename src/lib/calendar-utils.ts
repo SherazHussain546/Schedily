@@ -5,6 +5,9 @@ export interface Meeting {
   title: string;
   type: ItemType;
   employeeName?: string;
+  emails?: string;
+  description?: string;
+  attachments?: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -24,7 +27,7 @@ function formatToICSDate(dateStr: string, timeStr: string): string {
  * Calculates the relative trigger duration for an alarm to occur the day before at 8:00 PM.
  * Returns a string in the format -PT{H}H{M}M.
  */
-function getShiftAlarmTrigger(dateStr: string, startTimeStr: string): string {
+function getAlarmTrigger(dateStr: string, startTimeStr: string): string {
   try {
     // Construct start date object
     const start = new Date(`${dateStr}T${startTimeStr}:00`);
@@ -63,19 +66,22 @@ export function generateICSContent(meetings: Meeting[]): string {
       summary = `${m.employeeName} - ${summary}`;
     }
 
-    const description = m.type === 'shift' && m.employeeName ? `Employee: ${m.employeeName}` : '';
+    let descriptionParts = [];
+    if (m.type === 'shift' && m.employeeName) descriptionParts.push(`Employee: ${m.employeeName}`);
+    if (m.emails) descriptionParts.push(`Attendees: ${m.emails}`);
+    if (m.description) descriptionParts.push(`Notes: ${m.description}`);
+    if (m.attachments) descriptionParts.push(`Attachments: ${m.attachments}`);
     
-    let alarmBlock = '';
-    if (m.type === 'shift') {
-      const trigger = getShiftAlarmTrigger(m.date, m.startTime);
-      alarmBlock = [
-        'BEGIN:VALARM',
-        'ACTION:DISPLAY',
-        'DESCRIPTION:Shift Preparation Reminder',
-        `TRIGGER:${trigger}`,
-        'END:VALARM'
-      ].join('\r\n');
-    }
+    const description = descriptionParts.join('\\n');
+    
+    const trigger = getAlarmTrigger(m.date, m.startTime);
+    const alarmBlock = [
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:${m.type === 'shift' ? 'Shift' : 'Meeting'} Preparation Reminder`,
+      `TRIGGER:${trigger}`,
+      'END:VALARM'
+    ].join('\r\n');
     
     const eventLines = [
       'BEGIN:VEVENT',
@@ -88,10 +94,17 @@ export function generateICSContent(meetings: Meeting[]): string {
       `LOCATION:${m.location || ''}`,
     ];
 
-    if (alarmBlock) {
-      eventLines.push(alarmBlock);
+    // Add attendees if emails are provided
+    if (m.emails) {
+      const emailList = m.emails.split(',').map(e => e.trim());
+      emailList.forEach(email => {
+        if (email) {
+          eventLines.push(`ATTENDEE;CN=${email}:mailto:${email}`);
+        }
+      });
     }
 
+    eventLines.push(alarmBlock);
     eventLines.push('END:VEVENT');
 
     return eventLines.join('\r\n');

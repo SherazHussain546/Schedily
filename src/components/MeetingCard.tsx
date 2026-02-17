@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Trash2, Calendar, Clock, MapPin, Type, User, ExternalLink, Briefcase, Video } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Trash2, Calendar, Clock, MapPin, Type, User, ExternalLink, Briefcase, Video, Users, AlignLeft, Paperclip } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
@@ -85,32 +86,57 @@ export function MeetingCard({ meeting, onUpdate, onRemove }: MeetingCardProps) {
             ) : (
               <div className="space-y-2">
                 <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                  <Calendar className="w-4 h-4" /> Date
+                  <Users className="w-4 h-4" /> People (Email list)
                 </Label>
                 <Input
-                  type="date"
-                  value={meeting.date}
-                  onChange={(e) => onUpdate(meeting.id, { date: e.target.value })}
+                  placeholder="e.g. john@example.com, sara@example.com"
+                  value={meeting.emails || ''}
+                  onChange={(e) => onUpdate(meeting.id, { emails: e.target.value })}
                   className="bg-background focus:ring-primary"
                 />
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-             {meeting.type === 'shift' && (
+          {meeting.type === 'meeting' && (
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                    <Calendar className="w-4 h-4" /> Date
+                    <AlignLeft className="w-4 h-4" /> Description (Optional)
                   </Label>
-                  <Input
-                    type="date"
-                    value={meeting.date}
-                    onChange={(e) => onUpdate(meeting.id, { date: e.target.value })}
-                    className="bg-background focus:ring-accent"
+                  <Textarea
+                    placeholder="Provide some context for the meeting..."
+                    value={meeting.description || ''}
+                    onChange={(e) => onUpdate(meeting.id, { description: e.target.value })}
+                    className="bg-background focus:ring-primary min-h-[80px]"
                   />
                 </div>
-             )}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                    <Paperclip className="w-4 h-4" /> Attachment Links (Optional)
+                  </Label>
+                  <Textarea
+                    placeholder="Links to documents, slides, etc. (one per line)"
+                    value={meeting.attachments || ''}
+                    onChange={(e) => onUpdate(meeting.id, { attachments: e.target.value })}
+                    className="bg-background focus:ring-primary min-h-[80px]"
+                  />
+                </div>
+             </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+                <Calendar className="w-4 h-4" /> Date
+              </Label>
+              <Input
+                type="date"
+                value={meeting.date}
+                onChange={(e) => onUpdate(meeting.id, { date: e.target.value })}
+                className="bg-background"
+              />
+            </div>
             
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-muted-foreground font-medium">
@@ -135,29 +161,29 @@ export function MeetingCard({ meeting, onUpdate, onRemove }: MeetingCardProps) {
                 className="bg-background"
               />
             </div>
+          </div>
 
-            <div className={cn("space-y-2", meeting.type === 'meeting' ? "md:col-span-1" : "md:col-span-3")}>
-              <Label className="flex items-center gap-2 text-muted-foreground font-medium">
-                <MapPin className="w-4 h-4" /> Location / Eircode / URL
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g. D02 X285 or https://zoom.us/..."
-                  value={meeting.location}
-                  onChange={(e) => onUpdate(meeting.id, { location: e.target.value })}
-                  className="bg-background flex-1"
-                />
-                {meeting.location && (isUrl || isEircode) && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => window.open(isUrl ? meeting.location : getMapUrl(meeting.location), '_blank')}
-                    title={isUrl ? "Open Link" : "Open Maps"}
-                  >
-                    <ExternalLink className="w-4 h-4 text-primary" />
-                  </Button>
-                )}
-              </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2 text-muted-foreground font-medium">
+              <MapPin className="w-4 h-4" /> Location / Eircode / URL
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="e.g. D02 X285 or https://zoom.us/..."
+                value={meeting.location}
+                onChange={(e) => onUpdate(meeting.id, { location: e.target.value })}
+                className="bg-background flex-1"
+              />
+              {meeting.location && (isUrl || isEircode) && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => window.open(isUrl ? meeting.location : getMapUrl(meeting.location), '_blank')}
+                  title={isUrl ? "Open Link" : "Open Maps"}
+                >
+                  <ExternalLink className="w-4 h-4 text-primary" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
