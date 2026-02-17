@@ -1,38 +1,38 @@
+
 {
   "entities": {
     "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user's profile information, used to associate meetings with a specific user. Authentication details are handled externally.",
+      "description": "Represents a user's profile information.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the UserProfile entity. This typically comes from an external authentication system."
+          "description": "Unique identifier (Firebase UID)."
         },
         "email": {
           "type": "string",
-          "description": "The email address associated with the user profile.",
+          "description": "User's email address.",
           "format": "email"
         },
         "displayName": {
           "type": "string",
-          "description": "The user's preferred display name."
+          "description": "User's unique-ish username for sharing."
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp indicating when the user profile was created.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp indicating when the user profile was last updated.",
           "format": "date-time"
         }
       },
       "required": [
         "id",
         "email",
+        "displayName",
         "createdAt",
         "updatedAt"
       ]
@@ -41,51 +41,71 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Meeting",
       "type": "object",
-      "description": "Represents a single business meeting with its details, scheduled by a user.",
+      "description": "Represents a meeting or shift.",
       "properties": {
         "id": {
-          "type": "string",
-          "description": "Unique identifier for the Meeting entity."
+          "type": "string"
         },
         "userId": {
           "type": "string",
-          "description": "Reference to the UserProfile who owns or scheduled this meeting. (Relationship: UserProfile 1:N Meeting)"
+          "description": "The owner of the meeting."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "UID of the user who sent this (if shared)."
+        },
+        "senderName": {
+          "type": "string",
+          "description": "Username of the sender."
         },
         "title": {
-          "type": "string",
-          "description": "The descriptive title or subject of the meeting."
+          "type": "string"
         },
-        "startDateTime": {
+        "type": {
           "type": "string",
-          "description": "The exact date and time when the meeting is scheduled to begin, in ISO 8601 format.",
-          "format": "date-time"
+          "enum": ["meeting", "shift"]
         },
-        "endDateTime": {
+        "employeeName": {
+          "type": "string"
+        },
+        "date": {
           "type": "string",
-          "description": "The exact date and time when the meeting is scheduled to end, in ISO 8601 format.",
-          "format": "date-time"
+          "format": "date"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
         },
         "location": {
-          "type": "string",
-          "description": "The physical or virtual location where the meeting will take place."
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "emails": {
+          "type": "string"
+        },
+        "attachments": {
+          "type": "string"
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp indicating when the meeting record was created.",
           "format": "date-time"
         },
         "updatedAt": {
           "type": "string",
-          "description": "Timestamp indicating when the meeting record was last updated.",
           "format": "date-time"
         }
       },
       "required": [
-        "id",
         "userId",
         "title",
-        "startDateTime",
-        "endDateTime",
+        "type",
+        "date",
+        "startTime",
+        "endTime",
         "createdAt",
         "updatedAt"
       ]
@@ -106,13 +126,7 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores individual user profile information. The document ID for each user profile will be the Firebase Authentication UID. Access is restricted to the owner.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user."
-            }
-          ]
+          "description": "User profile data."
         }
       },
       {
@@ -122,20 +136,9 @@
           "schema": {
             "$ref": "#/backend/entities/Meeting"
           },
-          "description": "Stores individual meeting details for a specific user. This is a subcollection under the user's profile. Each document includes a denormalized 'userId' field for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user who owns the meeting."
-            },
-            {
-              "name": "meetingId",
-              "description": "The unique identifier for a specific meeting."
-            }
-          ]
+          "description": "User meetings/shifts."
         }
       }
-    ],
-    "reasoning": "The proposed Firestore structure prioritizes security, scalability, and debuggability by adhering to the core design principles. User profiles are stored in a top-level collection `/users`, with each document's ID being the user's authenticated UID. User-specific meetings are stored in a subcollection under their respective user profile: `/users/{userId}/meetings`. This hierarchical, path-based ownership is highly secure and straightforward to manage.\n\n**Authorization Independence:**\nTo achieve Authorization Independence (CRITICAL principle), every `Meeting` document stored under `/users/{userId}/meetings/{meetingId}` will include a `userId` field that explicitly identifies its owner. This `userId` field must match the `{userId}` wildcard in the path, which in turn must match `request.auth.uid`. This denormalization means that Firestore Security Rules can determine authorization solely by inspecting the `resource.data.userId` field within the `Meeting` document itself, and comparing it to `request.auth.uid` and the path parameter `{userId}`. This eliminates the need for expensive and complex `get()` calls to parent documents in security rules, allowing for atomic writes and reads, and simplifying rule logic. For example, a user can create a meeting without the rules needing to read their `UserProfile` document first to confirm ownership.\n\n**QAPs (Secure List Operations):**\nThe structural segregation directly supports Query Authorization Patterns (QAPs). By placing meetings in `/users/{userId}/meetings`, `list` operations become inherently secure. A client requesting a list of meetings would query `db.collection('users').doc(request.auth.uid).collection('meetings')`. Firestore Security Rules for this path can simply check `allow list: if request.auth.uid == userId;`. Because `userId` is a path parameter derived directly from `request.auth.uid`, the query *itself* limits the scope to only the authenticated user's data. This ensures that Firestore does not have to act as a filter, and only authorized data is ever returned, fulfilling the QAP mandate."
+    ]
   }
 }

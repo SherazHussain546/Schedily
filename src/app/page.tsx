@@ -1,10 +1,23 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { Meeting, generateICSContent, downloadICS, ItemType } from "@/lib/calendar-utils";
 import { MeetingCard } from "@/components/MeetingCard";
 import { Button } from "@/components/ui/button";
-import { CalendarPlus, Download, Sparkles, LayoutDashboard, Briefcase, LogIn, Loader2, LogOut, User as UserIcon } from "lucide-react";
+import { 
+  CalendarPlus, 
+  Download, 
+  Sparkles, 
+  LayoutDashboard, 
+  Briefcase, 
+  LogIn, 
+  Loader2, 
+  LogOut, 
+  User as UserIcon,
+  Trash,
+  Info
+} from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { 
@@ -17,7 +30,7 @@ import {
   updateDocumentNonBlocking,
   deleteDocumentNonBlocking
 } from "@/firebase";
-import { collection, doc, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, doc, query, orderBy, serverTimestamp, writeBatch, where, getDocs } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,11 +51,17 @@ export default function Schedily() {
     if (!db || !user) return null;
     return query(
       collection(db, "users", user.uid, "meetings"),
-      orderBy("createdAt", "desc")
+      orderBy("date", "asc"),
+      orderBy("startTime", "asc")
     );
   }, [db, user]);
 
-  const { data: meetings, isLoading: isMeetingsLoading } = useCollection<Meeting>(meetingsQuery);
+  const { data: allMeetings, isLoading: isMeetingsLoading } = useCollection<Meeting>(meetingsQuery);
+
+  // Filter meetings: Split between current and expired
+  const today = new Date().toISOString().split('T')[0];
+  const currentMeetings = allMeetings?.filter(m => m.date >= today) || [];
+  const expiredMeetings = allMeetings?.filter(m => m.date < today) || [];
 
   const handleSignOut = async () => {
     try {
@@ -71,7 +90,6 @@ export default function Schedily() {
       return;
     }
 
-    const today = new Date().toISOString().split('T')[0];
     const meetingRef = collection(db, "users", user.uid, "meetings");
     
     addDocumentNonBlocking(meetingRef, {
@@ -111,36 +129,101 @@ export default function Schedily() {
     });
   };
 
+  const purgeExpired = async () => {
+    if (!user || !db || expiredMeetings.length === 0) return;
+    
+    const batch = writeBatch(db);
+    expiredMeetings.forEach(m => {
+      const ref = doc(db, "users", user.uid, "meetings", m.id);
+      batch.delete(ref);
+    });
+
+    try {
+      await batch.commit();
+      toast({
+        title: "Cleanup Complete",
+        description: `Permanently deleted ${expiredMeetings.length} expired entries.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Cleanup Failed",
+        description: "Could not delete expired entries.",
+      });
+    }
+  };
+
   const handleDownload = () => {
-    if (!meetings || meetings.length === 0) {
+    if (!currentMeetings || currentMeetings.length === 0) {
       toast({
         variant: "destructive",
         title: "No entries",
-        description: "Add some entries to your schedule first.",
+        description: "Add some future entries to your schedule first.",
       });
       return;
     }
 
-    const hasEmptyFields = meetings.some((m) => {
-        if (m.type === 'shift' && !m.employeeName?.trim()) return true;
-        return !m.title.trim() && m.type === 'meeting';
-    });
-
-    if (hasEmptyFields) {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Please ensure all entries have titles or employee names.",
-      });
-      return;
-    }
-
-    const content = generateICSContent(meetings);
+    const content = generateICSContent(currentMeetings);
     downloadICS(content, "schedule-export.ics");
     toast({
       title: "Success",
-      description: "Your schedule has been exported successfully with cloud-synced data.",
+      description: "Your schedule has been exported successfully.",
     });
+  };
+
+  const shareWithUser = async (meeting: Meeting, targetUsername: string) => {
+    if (!db || !user || !targetUsername.trim()) return;
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("displayName", "==", targetUsername.trim()));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        toast({
+          variant: "destructive",
+          title: "User not found",
+          description: `No user found with username "${targetUsername}"`,
+        });
+        return;
+      }
+
+      const targetUser = querySnapshot.docs[0];
+      const targetUid = targetUser.id;
+
+      if (targetUid === user.uid) {
+        toast({
+          title: "Self-Share",
+          description: "You cannot share an entry with yourself.",
+        });
+        return;
+      }
+
+      const recipientMeetingRef = collection(db, "users", targetUid, "meetings");
+      
+      const { id, ...dataToShare } = meeting;
+      addDocumentNonBlocking(recipientMeetingRef, {
+        ...dataToShare,
+        userId: targetUid,
+        senderId: user.uid,
+        senderName: user.displayName || "Anonymous",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      toast({
+        title: "Shared Successfully",
+        description: `Sent "${meeting.title}" to ${targetUsername}.`,
+      });
+
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Share Failed",
+        description: "An error occurred while sharing.",
+      });
+    }
   };
 
   if (isUserLoading) {
@@ -166,10 +249,10 @@ export default function Schedily() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <div className="hidden md:flex items-center gap-2 mr-2 text-sm text-muted-foreground font-medium">
+                <Link href="/profile" className="hidden md:flex items-center gap-2 mr-2 text-sm text-muted-foreground hover:text-primary font-medium transition-colors">
                   <UserIcon className="w-4 h-4" />
-                  {user.isAnonymous ? "Guest User" : (user.displayName || user.email)}
-                </div>
+                  {user.displayName || "Profile"}
+                </Link>
                 <Button variant="outline" size="sm" onClick={handleSignOut} className="text-muted-foreground hover:text-destructive">
                   <LogOut className="w-4 h-4 mr-2" /> <span className="hidden sm:inline">Sign Out</span>
                 </Button>
@@ -196,7 +279,7 @@ export default function Schedily() {
             </div>
             <h2 className="text-4xl font-bold font-headline text-slate-800 mb-4">Welcome to Schedily</h2>
             <p className="text-muted-foreground text-xl max-w-xl mb-8">
-              Sync your professional meetings and retail shifts to the cloud and export them to any calendar with smart reminders.
+              Sync your professional meetings and retail shifts to the cloud, share with colleagues, and export to any calendar.
             </p>
             <Link href="/login">
               <Button size="lg" className="px-8 py-6 h-auto text-lg rounded-2xl shadow-xl shadow-primary/20">
@@ -214,7 +297,7 @@ export default function Schedily() {
                 </div>
                 <p className="text-muted-foreground text-lg">
                   {user.displayName ? `Welcome back, ${user.displayName}. ` : ''}
-                  Your entries are automatically saved and synced to your account.
+                  Your entries are automatically synced.
                 </p>
               </div>
               <div className="flex gap-2 justify-center">
@@ -227,14 +310,27 @@ export default function Schedily() {
               </div>
             </div>
 
+            {expiredMeetings.length > 0 && (
+              <div className="mb-6 p-4 bg-muted/30 border rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Info className="w-4 h-4" />
+                  <span>You have {expiredMeetings.length} expired entries from previous dates.</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-destructive hover:bg-destructive/10">
+                  <Trash className="w-4 h-4 mr-2" /> Purge Old
+                </Button>
+              </div>
+            )}
+
             <div className="space-y-4">
-              {meetings && meetings.length > 0 ? (
-                meetings.map((meeting) => (
+              {currentMeetings.length > 0 ? (
+                currentMeetings.map((meeting) => (
                   <MeetingCard
                     key={meeting.id}
                     meeting={meeting}
                     onUpdate={updateMeeting}
                     onRemove={removeMeeting}
+                    onShare={shareWithUser}
                   />
                 ))
               ) : !isMeetingsLoading && (
