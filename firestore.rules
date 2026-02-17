@@ -2,31 +2,27 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // User Profiles
-    // Allows any signed-in user to read profiles (needed for username search).
-    // Only the owner can write to their own profile.
+    // User Profile Rules
     match /users/{userId} {
+      // Any authenticated user can read profiles (for sharing/search)
       allow read: if request.auth != null;
+      // Only the owner can write to their own profile
       allow write: if request.auth != null && request.auth.uid == userId;
 
-      // Meetings and Shifts Subcollection
-      // Explicitly match the collection for listing and the documents for individual access.
-      match /meetings {
-        // The owner has list access to their own meetings.
-        allow list: if request.auth != null && request.auth.uid == userId;
+      // Meetings and Shifts Rules
+      // We match the documents within the collection to provide both individual (get) 
+      // and collection-wide (list) access.
+      match /meetings/{meetingId} {
+        // The owner has full read and write access to their own entries
+        allow read, write: if request.auth != null && request.auth.uid == userId;
         
-        match /{meetingId} {
-          // The owner has full access to their documents.
-          allow get, write: if request.auth != null && request.auth.uid == userId;
-          
-          // Creation permissions:
-          // 1. The owner can create their own entries.
-          // 2. Any user can create an entry in another user's collection if they are sharing (senderId check).
-          allow create: if request.auth != null && (
-            request.auth.uid == userId || 
-            (request.resource.data.senderId != null && request.resource.data.senderId == request.auth.uid)
-          );
-        }
+        // Peer-to-Peer Sharing:
+        // Any authenticated user can create a meeting in another user's collection 
+        // IF they provide their own UID as the senderId.
+        allow create: if request.auth != null && (
+          request.auth.uid == userId || 
+          (request.resource.data.senderId != null && request.resource.data.senderId == request.auth.uid)
+        );
       }
     }
   }
