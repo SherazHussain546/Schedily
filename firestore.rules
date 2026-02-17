@@ -3,21 +3,23 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // 1. USER PROFILES
-    // Everyone can find users by username; only the owner can edit their profile.
+    // Everyone can search for users to find their ID (for sharing); only the owner can edit their own profile.
     match /users/{userId} {
       allow get, list: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
     // 2. MEETINGS / SHIFTS (The Mailbox Pattern)
+    // This subcollection is where a user's schedule lives.
     match /users/{userId}/meetings/{meetingId} {
       
-      // OWNERS: Full control over their own schedule.
-      // This allows the "list" method (queries) to work for the authenticated owner.
+      // OWNERS: Have the "Master Key" to their own folder.
+      // This explicitly allows 'list', 'get', and all 'write' operations for the authenticated owner.
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // MANAGERS: Can "Deliver" (Create) a meeting to another user.
-      // They cannot read, list, or update documents they didn't push.
+      // MANAGERS: Have "Delivery" access (Create-only).
+      // They can drop off a new entry into someone else's folder if they are signed in
+      // and provide their own senderId for accountability.
       allow create: if request.auth != null 
         && request.resource.data.senderId == request.auth.uid;
     }
