@@ -3,30 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // USER PROFILE RULES
-    // ------------------
-    // Profiles are publicly readable for network discovery (search by username).
-    // Only the owner can edit their own profile data.
+    // USER PROFILES
+    // -------------
+    // Profiles are public so users can find colleagues to follow or tag.
+    // Only the owner can edit their own profile info.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
 
-      // MASTER KEY FOR OWNERS
-      // ---------------------
-      // This recursive wildcard ensures that the owner has full permission 
-      // to LIST, GET, and MANAGE everything inside their private folder.
-      // This is the primary fix for the "Insufficient Permissions" on 'list' operations.
-      match /{allPaths=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+      // MEETINGS & SHIFTS
+      // -----------------
+      // Owner: Full access to list their schedule and manage entries.
+      // Peers: Can "CREATE" (Push/Deliver) a new entry into this folder.
+      match /meetings/{meetingId} {
+        allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null;
       }
 
-      // THE "MAILBOX" SLOT
-      // ------------------
-      // Allows Managers or Teammates to "PUSH" (create) a shift/meeting entry 
-      // into this user's schedule folder. They cannot list, read, or edit existing data.
-      // This facilitates the "Deliver Shift" functionality.
-      match /meetings/{meetingId} {
-        allow create: if request.auth != null && request.auth.uid != userId;
+      // SOCIAL NETWORK (FOLLOWING)
+      // --------------------------
+      // Only the owner manages who they are following.
+      match /following/{followedUserId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
   }
