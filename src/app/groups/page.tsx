@@ -149,8 +149,9 @@ export default function GroupsPage(props: {
       joinedAt: serverTimestamp()
     });
 
-    // Notify user of invitation
+    // Trigger AI Notification and save to Ledger
     triggerNotification({
+      recipientId: targetUser.id,
       recipientEmail: targetUser.email,
       recipientName: targetUser.displayName,
       senderName: user.displayName || 'Teammate',
@@ -158,7 +159,7 @@ export default function GroupsPage(props: {
       groupName: groupName
     });
 
-    toast({ title: "Member Added", description: `@${targetUser.displayName} added and notified via email.` });
+    toast({ title: "Member Added", description: `@${targetUser.displayName} invited. AI notification dispatched.` });
   };
 
   if (isUserLoading) {

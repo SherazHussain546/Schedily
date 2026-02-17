@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -92,7 +93,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
       createdAt: serverTimestamp(),
     });
 
-    // Notify group members about the new message
+    // Notify group members and save to their Inbox Ledgers
     try {
       const membersRef = collection(db, 'groups', groupId, 'members');
       const membersSnap = await getDocs(membersRef);
@@ -100,6 +101,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         const m = memberDoc.data();
         if (m.userId !== user.uid && m.email) {
           triggerNotification({
+            recipientId: m.userId,
             recipientEmail: m.email,
             recipientName: m.displayName,
             senderName: user.displayName || 'Teammate',
@@ -110,7 +112,7 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         }
       });
     } catch (err) {
-      console.warn('Notification sync failed', err);
+      console.warn('Notification broadcast sync failed', err);
     }
 
     setMessage('');
@@ -287,7 +289,6 @@ export function GroupChat({ groupId, groupName }: GroupChatProps) {
         </form>
       </div>
 
-      {/* Full Screen Media Preview Dialog */}
       <Dialog open={!!fullScreenMedia} onOpenChange={() => setFullScreenMedia(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-4xl p-0 overflow-hidden border-none bg-black/95 rounded-none sm:rounded-[2.5rem] h-[80vh] flex flex-col">
           <DialogHeader className="sr-only">

@@ -188,8 +188,9 @@ export default function SchedilyDashboard(props: {
         updatedAt: serverTimestamp(),
       });
 
-      // Notify the recipient via email
+      // Trigger AI Notification and save to Ledger
       triggerNotification({
+        recipientId: targetUid,
         recipientEmail: targetUserData.email,
         recipientName: targetUserData.displayName || 'Professional',
         senderName: user.displayName || 'A colleague',
@@ -197,7 +198,7 @@ export default function SchedilyDashboard(props: {
         content: meeting.title || 'New coordination task'
       });
 
-      toast({ title: "Shift Tagged!", description: `Sent to @${targetUsername}'s mailbox and notified via email.` });
+      toast({ title: "Shift Tagged!", description: `Sent to @${targetUsername}'s mailbox and AI notification dispatched.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Dispatch Failed" });
     }
@@ -226,6 +227,7 @@ export default function SchedilyDashboard(props: {
         const m = memberDoc.data();
         if (m.userId !== user.uid && m.email) {
           triggerNotification({
+            recipientId: m.userId,
             recipientEmail: m.email,
             recipientName: m.displayName,
             senderName: user.displayName || 'Teammate',
@@ -236,7 +238,7 @@ export default function SchedilyDashboard(props: {
         }
       });
 
-      toast({ title: "Group Broadcast!", description: `Shared with ${groupName}. Members notified.` });
+      toast({ title: "Group Broadcast!", description: `Shared with ${groupName}. AI notifications logged for members.` });
     } catch (error) {
       toast({ variant: "destructive", title: "Group Dispatch Failed" });
     }

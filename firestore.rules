@@ -5,39 +5,34 @@ service cloud.firestore {
     
     // PROFESSIONAL PROFILES & SOCIAL FEED
     match /users/{userId} {
-      // Allow authenticated professionals to see profiles for discovery
       allow read: if request.auth != null;
-      // Allow owners full control over their own professional profile
       allow write: if request.auth != null && request.auth.uid == userId;
       
       // Personal Schedule & Mailbox
       match /meetings/{meetingId} {
-        // Owner can do everything
         allow read, write: if request.auth != null && request.auth.uid == userId;
-        // Others can only create (push/dispatch) to this mailbox
         allow create: if request.auth != null;
       }
 
-      // Tracking who this professional follows
+      // AI Notification Log (Inbox)
+      match /notifications/{notificationId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        // Allow anyone authenticated to 'send' a notification to this user's log
+        allow create: if request.auth != null;
+      }
+
       match /following/{followedUserId} {
-        // Only the professional can see/manage their own following list
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
 
-      // Rules for tracking professional circle invitations and memberships
-      // Explicitly allowing list for the owner to fix the permission error
       match /memberships/{groupId} {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow delete: if request.auth != null && request.auth.uid == userId;
-        // Group owners/members can push membership info to the user (Invitation)
         allow create, update: if request.auth != null;
       }
 
-      // Rules for mutual professional networking (Followers)
       match /followers/{followerId} {
-        // Only the profile owner can see their own follower list
         allow read: if request.auth != null && request.auth.uid == userId;
-        // Anyone authenticated can add themselves to a followers list
         allow write: if request.auth != null && request.auth.uid == followerId;
       }
     }
@@ -52,26 +47,21 @@ service cloud.firestore {
         return get(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid)).data.role == 'owner';
       }
 
-      // Allow authenticated users to list group metadata for tagging/discovery
       allow get, list: if request.auth != null;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && isOwner();
 
       match /members/{memberId} {
-        // Only members can see the full member list
         allow read: if request.auth != null && isMember();
-        // Owners can manage members; individuals can remove themselves
         allow write: if request.auth != null && (isOwner() || request.auth.uid == memberId);
       }
 
       match /meetings/{meetingId} {
-        // Only members can interact with the shared group schedule
         allow read: if request.auth != null && isMember();
         allow create, update, delete: if request.auth != null && isMember();
       }
 
       match /messages/{messageId} {
-        // Only members can read/write messages
         allow read, create: if request.auth != null && isMember();
       }
     }

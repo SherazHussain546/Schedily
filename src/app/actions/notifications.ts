@@ -1,13 +1,16 @@
+
 'use server';
 
 import { generateNotificationEmail, type NotificationEmailInput } from '@/ai/flows/notification-email-flow';
+import { initializeFirebase } from '@/firebase';
+import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 
 /**
  * Triggers a professional notification.
- * In a production environment, this would integrate with an email provider like Resend or SendGrid.
- * For this prototype, it generates AI content and logs the "sent" email.
+ * This generates AI content and saves it to the recipient's notification ledger in Firestore.
  */
 export async function triggerNotification(params: {
+  recipientId: string;
   recipientEmail: string;
   recipientName: string;
   senderName: string;
@@ -24,12 +27,25 @@ export async function triggerNotification(params: {
       content: params.content,
     });
 
+    // Initialize Firebase for the write operation
+    const { firestore } = initializeFirebase();
+    
+    // Save the notification to the user's Inbox Ledger
+    const notificationRef = collection(firestore, 'users', params.recipientId, 'notifications');
+    await addDoc(notificationRef, {
+      subject: emailData.subject,
+      body: emailData.body,
+      type: params.type,
+      senderName: params.senderName,
+      createdAt: serverTimestamp(),
+    });
+
     // SIMULATION: Log the email to the server console
-    console.log('--- SCHEDILY EMAIL DISPATCHED ---');
-    console.log(`TO: ${params.recipientEmail} (${params.recipientName})`);
+    console.log('--- SCHEDILY EMAIL DISPATCHED & LOGGED ---');
+    console.log(`TO: ${params.recipientEmail} (${params.recipientName}) [ID: ${params.recipientId}]`);
     console.log(`SUBJECT: ${emailData.subject}`);
     console.log(`BODY: ${emailData.body}`);
-    console.log('---------------------------------');
+    console.log('------------------------------------------');
 
     return { success: true, ...emailData };
   } catch (error) {

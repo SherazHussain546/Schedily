@@ -36,6 +36,20 @@
       },
       "required": ["userId", "title", "type", "date", "startTime", "endTime", "createdAt"]
     },
+    "Notification": {
+      "title": "Notification",
+      "description": "A record of an AI-generated email sent to the user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "type": { "type": "string", "enum": ["message", "shift", "meeting", "invitation"] },
+        "senderName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["subject", "body", "type", "createdAt"]
+    },
     "Group": {
       "title": "Group",
       "description": "A professional team or department group.",
@@ -96,6 +110,10 @@
     "/users/{userId}/meetings/{meetingId}": {
       "schema": { "$ref": "#/backend/entities/Meeting" },
       "description": "Personal schedule feed."
+    },
+    "/users/{userId}/notifications/{notificationId}": {
+      "schema": { "$ref": "#/backend/entities/Notification" },
+      "description": "Inbox for AI-generated coordination emails."
     },
     "/users/{userId}/memberships/{groupId}": {
       "schema": { "$ref": "#/backend/entities/Membership" },
