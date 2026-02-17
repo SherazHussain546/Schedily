@@ -2,26 +2,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. USER PROFILES
-    // Allows discovery: Managers can find employees by searching for their username.
-    // Profiles are writable only by the owner during signup/update.
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    // 1. RECURSIVE OWNERSHIP (The Master Key)
+    // If the path matches the authenticated user's ID, they have full access to everything underneath.
+    // This allows for complex queries and listing of subcollections (like meetings).
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 2. USER SCHEDULE (MEETINGS & SHIFTS)
-    // This subcollection holds the private entries for each user.
+    // 2. PROFILE DISCOVERY
+    // Allows any authenticated user to search/read profile documents.
+    // This is necessary so Managers can find an Employee's UID using their Username.
+    match /users/{userId} {
+      allow read: if request.auth != null;
+    }
+
+    // 3. MAILBOX PUSH (Delivery Access)
+    // Allows any authenticated user to CREATE a document in another user's meetings collection.
+    // This is the "Push" model where managers drop shifts into an employee's mailbox.
     match /users/{userId}/meetings/{meetingId} {
-      
-      // OWNER ACCESS: 
-      // If the userId in the path matches the authenticated UID, grant full control.
-      // Explicitly allows 'list' (collection queries) and 'get' (single items).
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      
-      // DELIVERY ACCESS (THE "PUSH" MODEL):
-      // Allows ANY authenticated user (e.g., a Manager) to CREATE a new entry.
-      // This is like a one-way mailbox slot: they can drop things in, but can't see the contents.
       allow create: if request.auth != null;
     }
   }

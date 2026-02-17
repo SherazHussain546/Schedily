@@ -1,9 +1,8 @@
-
 {
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Represents a user's profile information.",
+      "description": "Represents a user's profile information, searchable by managers for shift delivery.",
       "type": "object",
       "properties": {
         "id": {
@@ -38,7 +37,7 @@
     },
     "Meeting": {
       "title": "Meeting",
-      "description": "Represents a meeting or shift in the schedule.",
+      "description": "Represents a meeting or shift. Can be private or pushed to another user's schedule.",
       "type": "object",
       "properties": {
         "userId": {
@@ -136,7 +135,7 @@
       "schema": {
         "$ref": "#/backend/entities/Meeting"
       },
-      "description": "Individual schedule entry in a user's collection."
+      "description": "Individual schedule entry in a user's collection, supporting private entries and pushes from managers."
     }
   }
 }
