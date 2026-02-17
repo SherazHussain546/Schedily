@@ -41,8 +41,7 @@
       "type": "object",
       "properties": {
         "userId": {
-          "type": "string",
-          "description": "The UID of the schedule owner."
+          "type": "string"
         },
         "title": {
           "type": "string"
