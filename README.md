@@ -1,4 +1,5 @@
-# Schedily - The Future of Professional Social Coordination
+
+# Schedily - Professional Social Coordination
 
 **Schedily** is a premium social coordination and scheduling platform engineered for high-performance professional environments. Developed by **Sheraz Hussain** at **SYNC TECH Solutions**, Schedily operates as a social network for productivity, allowing teams to synchronize shifts, meetings, and tasks through a seamless "Tag and Dispatch" ecosystem.
 
@@ -17,9 +18,15 @@ Unauthorized cloning, distribution, or reproduction of this codebase is strictly
 
 ---
 
-## 🚀 Deployment Guide (Netlify)
+## 🛡️ Security & Privacy
+Schedily is built with a "Security by Design" philosophy. 
+- **Firebase Config**: The public configuration in `src/firebase/config.ts` is safe to remain in the code. In Firebase, client-side security is enforced by **Firestore Security Rules**, not by hiding API keys.
+- **Private Secrets**: Sensitive keys like `GEMINI_API_KEY` are managed via environment variables and are excluded from version control via `.gitignore`.
+- **Data Protection**: All personal schedules and team communications are protected by role-based access control.
 
-To host Schedily on Netlify, follow these steps to ensure your secrets are secure:
+---
+
+## 🚀 Deployment Guide (Netlify)
 
 ### 1. Push to GitHub
 ```bash
@@ -35,20 +42,12 @@ git push -u origin main
 Once you import the project into Netlify, go to **Site Settings > Environment Variables** and add:
 - `GEMINI_API_KEY`: Your Google AI Studio API key.
 
-*Note: Your Firebase public configuration in `src/firebase/config.ts` is bundled automatically. Security is enforced by Firestore Security Rules.*
-
 ---
 
 ## 🌟 Key Features
-- **Social Network Model**: Follow colleagues to build a custom coordination directory.
-- **Tag & Dispatch System**: Securely push tasks directly into a teammate's schedule.
-- **Smart ICS Engine**: Generates standard Vcalendar files with built-in preparation alarms.
-- **Privacy-First Design**: Personal schedules are protected by advanced Firestore Security Rules.
-
----
-
-## 🔍 SEO & Metadata
-- **Keywords**: Professional Scheduling, Retail Shift Management, Social Coordination, Team Productivity, Schedily, ICS Calendar Generator, SYNC TECH Solutions, Sheraz Hussain, Next.js 15, Firebase Scheduling.
-- **Description**: Schedily is the premier social coordination hub for professional teams, enabling seamless shift tagging and calendar synchronization.
+- **Social Coordination Hub**: Tag colleagues instantly to build a custom coordination directory.
+- **Professional Groups**: Create team circles with shared schedules and real-time chat.
+- **Bulk Sync Engine**: Generate a single `.ics` file for your entire professional schedule.
+- **Real-Time Interaction**: Built-in group knowledge sharing and team discussions.
 
 © 2025 SYNC TECH Solutions. All rights reserved.
