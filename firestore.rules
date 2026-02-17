@@ -2,24 +2,23 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // User Profile Rules
+    // 1. User Profile Rules
     match /users/{userId} {
-      // Profiles are readable by authenticated users so they can find people to share with
+      // Profiles are readable by authenticated users so managers can find employees by username
       allow read: if request.auth != null;
       // Only the owner can manage their own profile metadata
       allow write: if request.auth != null && request.auth.uid == userId;
 
-      // Meetings and Shifts Subcollection
-      // We use a recursive match or specific collection match to ensure 'list' operations work
+      // 2. Meetings and Shifts Subcollection
       match /meetings/{meetingId} {
         
-        // 1. Ownership Rule: The owner of the schedule has full access
-        // This covers 'get' (single doc) and 'list' (the entire schedule view)
+        // Ownership Rule: The employee has full access to their own schedule (List, Get, Create, Update, Delete)
         allow read, write: if request.auth != null && request.auth.uid == userId;
 
-        // 2. Sharing Rule (The "Mailbox" Pattern):
-        // Allows other users to "send" a meeting to this user's schedule.
-        // They can ONLY create. They cannot read, update, or delete once sent.
+        // Manager "Push" Rule: 
+        // Allows a Manager to "Send" a meeting to this user's schedule.
+        // They can ONLY create. They cannot read the employee's existing schedule.
+        // They must identify themselves as the sender.
         allow create: if request.auth != null && 
           request.resource.data.senderId != null && 
           request.resource.data.senderId == request.auth.uid;

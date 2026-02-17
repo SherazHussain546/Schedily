@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -16,7 +15,8 @@ import {
   LogOut, 
   User as UserIcon,
   Trash,
-  Info
+  Info,
+  Users
 } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
@@ -110,7 +110,7 @@ export default function Schedily() {
 
     toast({
       title: type === 'shift' ? "Shift Added" : "Meeting Added",
-      description: `A new ${type} has been added to your cloud storage.`,
+      description: `A new ${type} has been added to your local schedule.`,
     });
   };
 
@@ -193,8 +193,8 @@ export default function Schedily() {
 
       if (targetUid === user.uid) {
         toast({
-          title: "Self-Share",
-          description: "You cannot share an entry with yourself.",
+          title: "Self-Delivery",
+          description: "You are already viewing this entry.",
         });
         return;
       }
@@ -206,22 +206,21 @@ export default function Schedily() {
         ...dataToShare,
         userId: targetUid,
         senderId: user.uid,
-        senderName: user.displayName || "Anonymous",
+        senderName: user.displayName || "Manager",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
       toast({
-        title: "Shared Successfully",
-        description: `Sent "${meeting.title}" to ${targetUsername}.`,
+        title: "Pushed to Employee",
+        description: `Sent "${meeting.title}" directly to ${targetUsername}'s schedule.`,
       });
 
     } catch (error) {
-      console.error(error);
       toast({
         variant: "destructive",
-        title: "Share Failed",
-        description: "An error occurred while sharing.",
+        title: "Delivery Failed",
+        description: "Could not send entry to employee.",
       });
     }
   };
@@ -279,7 +278,7 @@ export default function Schedily() {
             </div>
             <h2 className="text-4xl font-bold font-headline text-slate-800 mb-4">Welcome to Schedily</h2>
             <p className="text-muted-foreground text-xl max-w-xl mb-8">
-              Sync your professional meetings and retail shifts to the cloud, share with colleagues, and export to any calendar.
+              The professional "Push" scheduler. Managers create shifts, employees receive them instantly.
             </p>
             <Link href="/login">
               <Button size="lg" className="px-8 py-6 h-auto text-lg rounded-2xl shadow-xl shadow-primary/20">
@@ -296,16 +295,15 @@ export default function Schedily() {
                   {isMeetingsLoading && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
                 </div>
                 <p className="text-muted-foreground text-lg">
-                  {user.displayName ? `Welcome back, ${user.displayName}. ` : ''}
-                  Your entries are automatically synced.
+                  Entries pushed to you or created by you appear here.
                 </p>
               </div>
               <div className="flex gap-2 justify-center">
                 <Button variant="outline" onClick={() => addItem('meeting')} className="flex items-center gap-2">
-                  <CalendarPlus className="w-4 h-4" /> Meeting
+                  <CalendarPlus className="w-4 h-4" /> Add Meeting
                 </Button>
                 <Button variant="outline" onClick={() => addItem('shift')} className="flex items-center gap-2 border-accent/20 hover:border-accent text-accent">
-                  <Briefcase className="w-4 h-4" /> Shift
+                  <Briefcase className="w-4 h-4" /> Create Shift
                 </Button>
               </div>
             </div>
@@ -317,7 +315,7 @@ export default function Schedily() {
                   <span>You have {expiredMeetings.length} expired entries from previous dates.</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={purgeExpired} className="text-destructive hover:bg-destructive/10">
-                  <Trash className="w-4 h-4 mr-2" /> Purge Old
+                  <Trash className="w-4 h-4 mr-2" /> Clear History
                 </Button>
               </div>
             )}
@@ -335,36 +333,32 @@ export default function Schedily() {
                 ))
               ) : !isMeetingsLoading && (
                 <div className="text-center py-20 border-2 border-dashed rounded-3xl bg-slate-50">
-                  <p className="text-muted-foreground">Your schedule is currently empty. Add a meeting or shift above!</p>
+                  <p className="text-muted-foreground">No current entries. Add a shift to start!</p>
                 </div>
               )}
             </div>
 
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
-               <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-primary/20 rounded-3xl bg-primary/5 group">
-                  <LayoutDashboard className="w-8 h-8 text-primary mb-4" />
-                  <p className="text-slate-600 font-medium mb-6 text-center">Plan a collaborative meeting</p>
-                  <Button variant="secondary" onClick={() => addItem('meeting')} className="bg-white border hover:bg-slate-50 text-primary font-semibold w-full py-6 h-auto rounded-2xl shadow-sm">
-                    <CalendarPlus className="w-5 h-5 mr-2" /> Add Meeting
-                  </Button>
-               </div>
-               <div className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-accent/20 rounded-3xl bg-accent/5 group">
-                  <Briefcase className="w-8 h-8 text-accent mb-4" />
-                  <p className="text-slate-600 font-medium mb-6 text-center">Manage retail staff shifts</p>
-                  <Button variant="secondary" onClick={() => addItem('shift')} className="bg-white border hover:bg-slate-50 text-accent font-semibold w-full py-6 h-auto rounded-2xl shadow-sm">
-                    <Briefcase className="w-5 h-5 mr-2" /> Add Shift
+            <div className="mt-12 p-8 border-2 border-dashed rounded-3xl bg-slate-50/50 flex flex-col items-center text-center">
+               <Users className="w-12 h-12 text-muted-foreground mb-4" />
+               <h3 className="text-xl font-bold text-slate-800 mb-2">Manager Tools</h3>
+               <p className="text-muted-foreground max-w-md mb-6">
+                 To assign a shift to an employee, add it to your list first, then click the <strong>Delivery</strong> icon on the card to push it to their schedule.
+               </p>
+               <div className="flex gap-4">
+                  <Button variant="outline" onClick={() => addItem('shift')}>
+                    <Briefcase className="w-4 h-4 mr-2" /> Prep New Shift
                   </Button>
                </div>
             </div>
           </>
         )}
 
-        <div className="mt-20 pt-10 border-t text-center text-sm text-muted-foreground">
-          <p>© {year} Schedily. Irish Eircode and Virtual Link ready.</p>
+        <footer className="mt-20 pt-10 border-t text-center text-sm text-muted-foreground">
+          <p>© {year} Schedily. High-Efficiency Push Scheduling.</p>
           <p className="mt-2">
             Built by <a href="https://synctech.ie" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">SYNC TECH Solutions</a>
           </p>
-        </div>
+        </footer>
       </main>
 
       <Toaster />
