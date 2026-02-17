@@ -25,9 +25,10 @@ service cloud.firestore {
       }
 
       // Rules for tracking professional circle invitations and memberships
+      // Explicitly allowing list for the owner to fix the permission error
       match /memberships/{groupId} {
-        // The professional can list their memberships and leave groups
-        allow get, list, delete: if request.auth != null && request.auth.uid == userId;
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow delete: if request.auth != null && request.auth.uid == userId;
         // Group owners/members can push membership info to the user (Invitation)
         allow create, update: if request.auth != null;
       }
@@ -35,7 +36,7 @@ service cloud.firestore {
       // Rules for mutual professional networking (Followers)
       match /followers/{followerId} {
         // Only the profile owner can see their own follower list
-        allow get, list: if request.auth != null && request.auth.uid == userId;
+        allow read: if request.auth != null && request.auth.uid == userId;
         // Anyone authenticated can add themselves to a followers list
         allow write: if request.auth != null && request.auth.uid == followerId;
       }

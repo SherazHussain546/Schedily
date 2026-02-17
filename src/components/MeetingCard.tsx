@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Meeting, generateICSContent, downloadICS } from "@/lib/calendar-utils";
+import { Meeting, generateICSContent, downloadICS, generateGoogleCalendarUrl } from "@/lib/calendar-utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,8 @@ import {
   Download,
   Share,
   FileText,
-  Link as LinkIcon
+  Link as LinkIcon,
+  CalendarDays
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -62,14 +63,12 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
   const isEircode = /^[A-Z][0-9][0-9W]\s?[0-9A-Z]{4}$/i.test(meeting.location.trim());
   const isPending = meeting.status === 'pending';
 
-  // Smart URL extraction for related links
   const detectedLinks = useMemo(() => {
     if (!meeting.attachments) return [];
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return meeting.attachments.match(urlRegex) || [];
   }, [meeting.attachments]);
 
-  // Social-style live search logic
   useEffect(() => {
     const performSearch = async () => {
       if (!tagSearch.trim() || !db) {
@@ -131,6 +130,11 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
     const filename = `${meeting.title || (meeting.type === 'shift' ? 'Shift' : 'Meeting')}-${meeting.date}.ics`;
     downloadICS(content, filename);
     toast({ title: "Calendar Event Generated" });
+  };
+
+  const handleAddToGoogle = () => {
+    const url = generateGoogleCalendarUrl(meeting);
+    window.open(url, '_blank');
   };
 
   const downloadAttachment = (url: string) => {
@@ -195,6 +199,16 @@ export function MeetingCard({ meeting, db, onUpdate, onRemove, onShare, onShareG
                   <CheckCircle2 className="w-4 h-4 mr-2" /> Sync to Schedule
                 </Button>
               )}
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleAddToGoogle}
+                className="text-muted-foreground hover:text-primary rounded-full"
+                title="Add to Google Calendar"
+              >
+                <CalendarDays className="w-5 h-5" />
+              </Button>
 
               <Button
                 variant="ghost"
